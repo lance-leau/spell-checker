@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct node {
 	char value;
@@ -19,6 +20,39 @@ struct node* createNode (char value) {
 
 struct node* initTree() {
 	return createNode('_');
+}
+
+void addWord(struct node* tree, const char* s)
+{
+	struct node* current = tree;
+
+	for(size_t i = 0, i < strlen(s); i++)
+	{
+		int index = tolower(s[i]) - 'a';
+
+		if(current->children[index] == NULL)
+		{
+			current->children[index] = createNode(tolower(s[i]);
+		}
+		current = current->children[index];
+	}
+}
+
+int isWord(struct node* tree, const char* s)
+{
+        struct node* current = tree;
+
+        for(size_t i = 0, i < strlen(s); i++)
+        {
+                int index = tolower(s[i]) - 'a';
+
+                if(current->children[index] == NULL)
+                {
+                        return 0;
+                }
+                current = current->children[index];
+        }
+	return current->isWord;
 }
 
 
