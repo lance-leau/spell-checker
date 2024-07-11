@@ -1,33 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define MAX_WORD_SIZE 20
-#define INITIAL_CAPACITY 16
-
-// Structure to store word counts
-typedef struct {
-    char word[MAX_WORD_SIZE];
-    int count;
-} WordCount;
-
-// Structure to store the hash map entry
-typedef struct {
-    char key[MAX_WORD_SIZE];
-    WordCount *followers;
-    int followerCount;
-    int followerCapacity;
-} HashMapEntry;
-
-// Structure to store the hash map
-typedef struct {
-    HashMapEntry *entries;
-    int size;
-    int capacity;
-} HashMap;
-
-void addWordToHashMap(HashMap *map, const char *key, const char *follower);
-
+#include "hash_map.h"
 
 // Initialize a hash map
 HashMap* initHashMap() {
@@ -38,16 +12,17 @@ HashMap* initHashMap() {
     return map;
 }
 
-// Hash function for strings
+// hashes the word to easily find it later
+// in case of collision (unexpected/unlikely results) the problem is probably hear
 unsigned int hash(const char *str) {
-    unsigned int hash = 5381;
+    unsigned int hash = 5381; // try using another number if there is a problem with hashing
     int c;
     while ((c = *str++))
         hash = ((hash << 5) + hash) + c;
     return hash;
 }
 
-// Find an entry by key
+// finds an entry by key
 HashMapEntry* findEntry(HashMap *map, const char *key) {
     unsigned int idx = hash(key) % map->capacity;
     while (map->entries[idx].key[0] != '\0') {
@@ -59,12 +34,12 @@ HashMapEntry* findEntry(HashMap *map, const char *key) {
     return NULL;
 }
 
-// Check if key is in hash map
+// checks if key is in hash map
 int isKeyInHashMap(HashMap *map, const char *key) {
     return findEntry(map, key) != NULL;
 }
 
-// Resize hash map
+// resizes hash map
 void resizeHashMap(HashMap *map) {
     int oldCapacity = map->capacity;
     HashMapEntry *oldEntries = map->entries;
@@ -87,7 +62,7 @@ void resizeHashMap(HashMap *map) {
     free(oldEntries);
 }
 
-// Add a word to the hash map
+// adds a word to the given hash map
 void addWordToHashMap(HashMap *map, const char *key, const char *follower) {
     if (map->size >= map->capacity / 2) {
         resizeHashMap(map);
@@ -126,7 +101,7 @@ void addWordToHashMap(HashMap *map, const char *key, const char *follower) {
     map->entries[idx].followerCount++;
 }
 
-// Pretty print the hash map
+// Pretty print <3
 void prettyPrintHashMap(HashMap *map) {
     for (int i = 0; i < map->capacity; i++) {
         if (map->entries[i].key[0] != '\0') {
@@ -139,17 +114,7 @@ void prettyPrintHashMap(HashMap *map) {
     }
 }
 
-// Free the hash map
-void freeHashMap(HashMap *map) {
-    for (int i = 0; i < map->capacity; i++) {
-        if (map->entries[i].key[0] != '\0') {
-            free(map->entries[i].followers);
-        }
-    }
-    free(map->entries);
-    free(map);
-}
-
+// reads a file and adds every word to the hash map
 void parseWord(HashMap* map, char* filename) {
 	FILE *file = fopen(filename, "r");
     if (file == NULL) {
@@ -193,14 +158,7 @@ void parseWord(HashMap* map, char* filename) {
 
 int main() {
     HashMap *map = initHashMap();
-    /*
-	addWordToHashMap(map, "hello", "world");
-    addWordToHashMap(map, "hello", "there");
-    addWordToHashMap(map, "hello", "world");
-    addWordToHashMap(map, "hi", "there");
-	*/
 	parseWord(map, "text.txt");
     prettyPrintHashMap(map);
-    freeHashMap(map);
     return 0;
 }
