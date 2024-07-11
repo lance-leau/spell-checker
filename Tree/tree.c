@@ -78,29 +78,37 @@ void prettyPrint(struct node* tree, int level) {
 
 
 int main (int argc, char** argv) {
-        struct node* tree = initTree();
-        char* a[4] = {"hello","world","play","he"};
-        
-        for(size_t i= 0; i < 4; i++)
-        {
-            //printf("Word: %c\n", a[i]);
-            addWord(tree, a[i]);
-        }
-        
-        for(size_t j= 0; j < 4; j++)
-        {
-            
-            
-                int k = isWord(tree, a[j]);
-                if(k == 1)
-                    printf("%s is in tree \n", a[j]);
-                else
-                    printf("%s is not in tree \n", a[j]);
-                    
-        }
-            
+    struct node* tree = initTree();
 
-        prettyPrint(tree, 0);
+    
+    FILE* file;
+    char line[256];
+    file = fopen("test.txt", "r");
+ 
+    if (NULL == file) {
+        printf("file can't be opened \n");
+    }
+ 
+    printf("content of this file are \n");
+ 
+    while (fgets(line, sizeof(line), file) != NULL) 
+    {
+        line[strcspn(line, "\n\r")] = '\0';
+        printf("%s\n", line);
+        addWord(tree,line);
+    }
+    fclose(file);
+
+    int k = isWord(tree, "trois");
+
+    if(k == 1)
+        printf("Hello is in tree \n");
+    else
+        printf("Hello is not in tree \n");
+
+    prettyPrint(tree, 0);
+    
+
         return 0;
 }
 
