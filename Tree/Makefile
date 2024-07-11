@@ -1,19 +1,20 @@
 CC = gcc
+
 CFLAGS = -Wall -Werror -g
 
-TARGET = levenshtein
+TARGET = tree
 
-SRCS = levenshtein.c
+SRCS = tree.c
 
-OBJS = $(SCRC:.c=.o)
+OBJS = $(SRCS:.c=.o)
 
-$(TARGET): $(OBJS)
+$(TARGET): ($OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-%.o: %.c
+%.o %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean:
+clean: 
 	rm -f $(TARGET) $(OBJS)
 
 .PHONY: clean
