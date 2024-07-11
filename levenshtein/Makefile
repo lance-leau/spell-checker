@@ -1,11 +1,12 @@
 CC = gcc
+
 CFLAGS = -Wall -Werror -g
 
 TARGET = levenshtein
 
 SRCS = levenshtein.c
 
-OBJS = $(SCRC:.c=.o)
+OBJS = $(SRCS:.c=.o)
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
@@ -17,3 +18,4 @@ clean:
 	rm -f $(TARGET) $(OBJS)
 
 .PHONY: clean
+

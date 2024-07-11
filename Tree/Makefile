@@ -8,10 +8,10 @@ SRCS = tree.c
 
 OBJS = $(SRCS:.c=.o)
 
-$(TARGET): ($OBJS)
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
 
-%.o %.c
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean: 
