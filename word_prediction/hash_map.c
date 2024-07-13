@@ -45,7 +45,7 @@ void resizeHashMap(HashMap *map) {
     HashMapEntry *oldEntries = map->entries;
 
     map->capacity *= 2;
-    map->entries = malloc(sizeof(HashMapEntry) * map->capacity);
+    map->entries = malloc(sizeof(HashMapEntry)* map->capacity);
     map->size = 0;
 
     for (int i = 0; i < oldCapacity; i++) {
@@ -63,7 +63,7 @@ void resizeHashMap(HashMap *map) {
 }
 
 // adds a word to the given hash map
-void addWordToHashMap(HashMap *map, const char *key, const char *follower) {
+void addWordToHashMap(HashMap * map, char * key, char * follower) {
     if (map->size >= map->capacity / 2) {
         resizeHashMap(map);
     }
@@ -116,7 +116,7 @@ void prettyPrintHashMap(HashMap *map) {
 
 // reads a file and adds every word to the hash map
 void parseWord(HashMap* map, char* filename) {
-	FILE *file = fopen(filename, "r");
+	FILE* file = fopen(filename, "r");
     if (file == NULL) {
         perror("Error opening file");
         return;
@@ -132,13 +132,15 @@ void parseWord(HashMap* map, char* filename) {
         if ('A' <= ch && ch <= 'Z') {
 			ch += 'a' - 'A';
 		}
-		if ('a' <= ch && ch <= 'z') {
+		if (('a' <= ch && ch <= 'z') || (ch == '\''|| ch == '-')) {
 			currWord[currWordSize] = ch;
 			currWordSize++;
 		} else {
 			if (currWordSize != 0) {
 				if (prev != NULL) {
 					addWordToHashMap(map, prev, currWord);
+				} else {
+					addWordToHashMap(map, "_", currWord);
 				}
 				prev = calloc(MAX_WORD_SIZE, sizeof(char));
 				for (int i = 0; currWord[i] != 0; i++) {
@@ -156,9 +158,47 @@ void parseWord(HashMap* map, char* filename) {
     fclose(file);
 }
 
+int __compareWordCount(const void *a, const void *b) {
+	WordCount* wc1 = (WordCount *)a;
+	WordCount* wc2 = (WordCount *)b;
+	return wc2->count - wc1->count;
+}
+
+
+void sortWordFrequency(HashMap* map) {
+	for (int i = 0; i < map->capacity; i++) {
+		if (map->entries[i].key[0] != '\0') {
+			// of course there is a qsort already in implemented in <stdlib.h>, I knew that, I did not try to code it by hand
+			qsort(map->entries[i].followers, map->entries[i].followerCount, sizeof(WordCount), __compareWordCount);
+        }
+    }
+}
+
+void filterLowFrequencyWords(HashMap* map, int threshhold) {
+	// filterLowFreqencyWords() only works on sorted keys (first call sortWordFrequency)
+	for (int i = 0; i < map->capacity; i++) {
+		HashMapEntry entry = map->entries[i];
+		if (entry.key[0] != '\0') {
+			for (int j = 0; j < entry.followerCount; j++) {
+				if (entry.followers[j].count <= threshhold) {
+					map->entries[i].followerCount = j;
+					// entry->followers[j] = ;
+					printf("%s now has %i followers\n", entry.key, j);
+					if (j == 0) {
+						map->entries[i].key[0] = '\0';
+					}
+					break;
+				}
+			}
+		}
+	}	
+}
+
 int main() {
     HashMap *map = initHashMap();
-	parseWord(map, "text.txt");
-    prettyPrintHashMap(map);
+	parseWord(map, "text3.txt");
+	sortWordFrequency(map);
+    filterLowFrequencyWords(map, 1);
+	prettyPrintHashMap(map);
     return 0;
 }

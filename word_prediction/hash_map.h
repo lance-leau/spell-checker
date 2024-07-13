@@ -2,7 +2,7 @@
 #define HASH_MAP_H
 
 // define the constants
-#define MAX_WORD_SIZE 20
+#define MAX_WORD_SIZE 50
 #define INITIAL_CAPACITY 16
 
 // define the structurs:
@@ -16,7 +16,7 @@ typedef struct {
 // a key and a list of struct WordCount
 typedef struct {
     char key[MAX_WORD_SIZE];
-    WordCount *followers;
+    WordCount* followers;
     int followerCount;
     int followerCapacity;
 } HashMapEntry;
@@ -29,10 +29,10 @@ typedef struct {
 } HashMap;
 
 // public function used in other files (hopefully)
-HashMapEntry* findEntry(HashMap *map, const char *key);
-int isKeyInHashMap(HashMap *map, const char *key);
+HashMapEntry* findEntry(HashMap* map, const char* key);
+int isKeyInHashMap(HashMap *map, const char* key);
 void prettyPrintHashMap(HashMap *map);
-void addWordToHashMap(HashMap *map, const char *key, const char *follower);
+void addWordToHashMap(HashMap* map, char* key, char* follower);
 void parseWord(HashMap* map, char* filename);
 
 
