@@ -5,7 +5,7 @@
 
 // Initialize a hash map
 HashMap* initHashMap() {
-    HashMap *map = malloc(sizeof(HashMap));
+    HashMap* map = malloc(sizeof(HashMap));
     map->size = 0;
     map->capacity = INITIAL_CAPACITY;
     map->entries = malloc(sizeof(HashMapEntry) * map->capacity);
@@ -13,8 +13,8 @@ HashMap* initHashMap() {
 }
 
 // hashes the word to easily find it later
-// in case of collision (unexpected/unlikely results) the problem is probably hear
-unsigned int hash(const char *str) {
+// in case of collision (unexpected/unlikely results) the problem is probably here
+unsigned int hash(const char* str) {
     unsigned int hash = 5381; // try using another number if there is a problem with hashing
     int c;
     while ((c = *str++))
@@ -23,35 +23,34 @@ unsigned int hash(const char *str) {
 }
 
 // finds an entry by key
-HashMapEntry* findEntry(HashMap *map, const char *key) {
-    unsigned int idx = hash(key) % map->capacity;
-    while (map->entries[idx].key[0] != '\0') {
-        if (strcmp(map->entries[idx].key, key) == 0) {
-            return &map->entries[idx];
+HashMapEntry* findEntry(HashMap* map, const char* key) {
+    unsigned int index = hash(key) % map->capacity;
+    while (map->entries[index].key[0] != '\0') {
+        if (strcmp(map->entries[index].key, key) == 0) {
+            return &map->entries[index];
         }
-        idx = (idx + 1) % map->capacity;
+        index = (index+1) % map->capacity;
     }
     return NULL;
 }
 
 // checks if key is in hash map
-int isKeyInHashMap(HashMap *map, const char *key) {
+int isKeyInHashMap(HashMap* map, const char* key) {
     return findEntry(map, key) != NULL;
 }
 
 // resizes hash map
-void resizeHashMap(HashMap *map) {
+void resizeHashMap(HashMap* map) {
     int oldCapacity = map->capacity;
-    HashMapEntry *oldEntries = map->entries;
+    HashMapEntry* oldEntries = map->entries;
 
     map->capacity *= 2;
-    map->entries = malloc(sizeof(HashMapEntry)* map->capacity);
+    map->entries = calloc(map->capacity, sizeof(HashMapEntry));
     map->size = 0;
 
     for (int i = 0; i < oldCapacity; i++) {
         if (oldEntries[i].key[0] != '\0') {
             for (int j = 0; j < oldEntries[i].followerCount; j++) {
-                // Reinsert the followers
                 for (int k = 0; k < oldEntries[i].followers[j].count; k++) {
                     addWordToHashMap(map, oldEntries[i].key, oldEntries[i].followers[j].word);
                 }
@@ -63,42 +62,43 @@ void resizeHashMap(HashMap *map) {
 }
 
 // adds a word to the given hash map
-void addWordToHashMap(HashMap * map, char * key, char * follower) {
+void addWordToHashMap(HashMap* map, char* key, char* follower) {
     if (map->size >= map->capacity / 2) {
         resizeHashMap(map);
     }
 
-    unsigned int idx = hash(key) % map->capacity;
-    while (map->entries[idx].key[0] != '\0') {
-        if (strcmp(map->entries[idx].key, key) == 0) {
+    unsigned int index = hash(key) % map->capacity;
+    while (map->entries[index].key[0] != '\0') {
+        if (strcmp(map->entries[index].key, key) == 0) {
             break;
         }
-        idx = (idx + 1) % map->capacity;
+        index = (index + 1) % map->capacity;
     }
 
-    if (map->entries[idx].key[0] == '\0') {
-        strcpy(map->entries[idx].key, key);
-        map->entries[idx].followers = malloc(sizeof(WordCount) * INITIAL_CAPACITY);
-        map->entries[idx].followerCount = 0;
-        map->entries[idx].followerCapacity = INITIAL_CAPACITY;
+    if (map->entries[index].key[0] == '\0') {
+        strcpy(map->entries[index].key, key);
+        map->entries[index].followers = malloc(sizeof(WordCount) * INITIAL_CAPACITY);
+        map->entries[index].followerCount = 0;
+        map->entries[index].followerCapacity = INITIAL_CAPACITY;
         map->size++;
     }
 
-    for (int i = 0; i < map->entries[idx].followerCount; i++) {
-        if (strcmp(map->entries[idx].followers[i].word, follower) == 0) {
-            map->entries[idx].followers[i].count++;
+    for (int i = 0; i < map->entries[index].followerCount; i++) {
+        if (strcmp(map->entries[index].followers[i].word, follower) == 0) {
+            map->entries[index].followers[i].count++;
             return;
         }
     }
 
-    if (map->entries[idx].followerCount >= map->entries[idx].followerCapacity) {
-        map->entries[idx].followerCapacity *= 2;
-        map->entries[idx].followers = realloc(map->entries[idx].followers, sizeof(WordCount) * map->entries[idx].followerCapacity);
-    }
+    if (map->entries[index].followerCount >= map->entries[index].followerCapacity) {
+        map->entries[index].followerCapacity *= 2;
+        map->entries[index].followers = realloc(map->entries[index].followers, sizeof(WordCount) * map->entries[index].followerCapacity);
+	}
+    
 
-    strcpy(map->entries[idx].followers[map->entries[idx].followerCount].word, follower);
-    map->entries[idx].followers[map->entries[idx].followerCount].count = 1;
-    map->entries[idx].followerCount++;
+    strcpy(map->entries[index].followers[map->entries[index].followerCount].word, follower);
+    map->entries[index].followers[map->entries[index].followerCount].count = 1;
+    map->entries[index].followerCount++;
 }
 
 // Pretty print <3
@@ -164,7 +164,6 @@ int __compareWordCount(const void *a, const void *b) {
 	return wc2->count - wc1->count;
 }
 
-
 void sortWordFrequency(HashMap* map) {
 	for (int i = 0; i < map->capacity; i++) {
 		if (map->entries[i].key[0] != '\0') {
@@ -183,7 +182,6 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 				if (entry.followers[j].count <= threshhold) {
 					map->entries[i].followerCount = j;
 					// entry->followers[j] = ;
-					printf("%s now has %i followers\n", entry.key, j);
 					if (j == 0) {
 						map->entries[i].key[0] = '\0';
 					}
@@ -195,7 +193,7 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 }
 
 int main() {
-    HashMap *map = initHashMap();
+    HashMap* map = initHashMap();
 	parseWord(map, "text3.txt");
 	sortWordFrequency(map);
     filterLowFrequencyWords(map, 1);
