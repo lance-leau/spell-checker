@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <json-c/json.h>
 
 struct node {
         char value;
@@ -76,6 +77,41 @@ void prettyPrint(struct node* tree, int level) {
     }
 }
 
+json_object* serializeNode(struct node* root) {
+    json_object* jsonObj = json_object_new_object();
+
+    // Add 'value' field
+    json_object_object_add(jsonObj, "value", json_object_new_string_len(&root->value, 1));
+
+    // Add 'isWord' field
+    json_object_object_add(jsonObj, "isWord", json_object_new_int(root->isWord));
+
+    // Add 'children' field as an array
+    json_object* childrenArray = json_object_new_array();
+    for (int i = 0; i < 26; ++i) {
+        if (root->children[i] != NULL) {
+            json_object_array_add(childrenArray, serializeNode(root->children[i]));
+        }
+    }
+    json_object_object_add(jsonObj, "children", childrenArray);
+
+    return jsonObj;
+}
+
+// Function to write JSON data to a file
+void writeJSONToFile(json_object* jsonObj, const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        perror("Error opening file");
+        return;
+    }
+
+    const char* jsonString = json_object_to_json_string_ext(jsonObj, JSON_C_TO_STRING_PRETTY);
+    fprintf(file, "%s\n", jsonString);
+
+    fclose(file);
+}
+
 
 int main (int argc, char** argv) {
     struct node* tree = initTree();
@@ -94,19 +130,24 @@ int main (int argc, char** argv) {
     while (fgets(line, sizeof(line), file) != NULL) 
     {
         line[strcspn(line, "\n\r")] = '\0';
-        printf("%s\n", line);
         addWord(tree,line);
     }
     fclose(file);
 
-    int k = isWord(tree, "trois");
+    int k = isWord(tree, "aaa");
 
     if(k == 1)
         printf("Hello is in tree \n");
     else
         printf("Hello is not in tree \n");
 
-    prettyPrint(tree, 0);
+    json_object* jsonRoot = serializeNode(tree);
+
+    // Write JSON data to a file
+    writeJSONToFile(jsonRoot, "tree.json");
+
+    // Clean up
+    json_object_put(jsonRoot);
     
 
         return 0;
