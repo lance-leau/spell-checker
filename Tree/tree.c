@@ -119,7 +119,7 @@ int main (int argc, char** argv) {
     
     FILE* file;
     char line[256];
-    file = fopen("list_words.txt", "r");
+    file = fopen("text_100k.txt", "r");
  
     if (NULL == file) {
         printf("file can't be opened \n");
