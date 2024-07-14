@@ -42,6 +42,7 @@ int distance(char* a, char* b)
 
 }
 
+/*
 int main() {
     
     char* a = "niche";
@@ -53,3 +54,4 @@ int main() {
 
     return 0;
 }
+*/

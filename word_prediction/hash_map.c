@@ -212,6 +212,7 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 	}	
 }
 
+/*
 int main() {
     HashMap* map = initHashMap();
 	parseWord(map, "text3.txt");
@@ -221,3 +222,4 @@ int main() {
 	prettyPrintHashMap(map);
     return 0;
 }
+*/
