@@ -8,7 +8,7 @@ HashMap* initHashMap() {
     HashMap* map = malloc(sizeof(HashMap));
     map->size = 0;
     map->capacity = INITIAL_CAPACITY;
-    map->entries = malloc(sizeof(HashMapEntry) * map->capacity);
+    map->entries = calloc(map->capacity, sizeof(HashMapEntry));
     return map;
 }
 
@@ -77,7 +77,7 @@ void addWordToHashMap(HashMap* map, char* key, char* follower) {
 
     if (map->entries[index].key[0] == '\0') {
         strcpy(map->entries[index].key, key);
-        map->entries[index].followers = malloc(sizeof(WordCount) * INITIAL_CAPACITY);
+        map->entries[index].followers = calloc(INITIAL_CAPACITY, sizeof(WordCount));
         map->entries[index].followerCount = 0;
         map->entries[index].followerCapacity = INITIAL_CAPACITY;
         map->size++;
@@ -132,7 +132,7 @@ void parseWord(HashMap* map, char* filename) {
         if ('A' <= ch && ch <= 'Z') {
 			ch += 'a' - 'A';
 		}
-		if (('a' <= ch && ch <= 'z') || (ch == '\''|| ch == '-')) {
+		if (('a' <= ch && ch <= 'z') || (ch == 39 || ch == '-')) {
 			currWord[currWordSize] = ch;
 			currWordSize++;
 		} else {
@@ -158,6 +158,27 @@ void parseWord(HashMap* map, char* filename) {
     fclose(file);
 }
 
+int __compareHashMapEntry(const void* a, const void* b) {
+    HashMapEntry* entryA = (HashMapEntry*)a;
+    HashMapEntry* entryB = (HashMapEntry*)b;
+    return strcmp(entryA->key, entryB->key);
+}
+
+// removes empty entries and sorts entries by key value alphabetically
+void sortHashMap(HashMap* map) {
+    int newSize = 0;
+    for (int i = 0; i < map->capacity; i++) {
+        if (map->entries[i].key[0] != '\0') {
+            map->entries[newSize] = map->entries[i];
+			map->entries[i].key[0] = '\0';
+        	newSize++;
+		}
+    }
+    map->size = newSize;
+    qsort(map->entries, map->size, sizeof(HashMapEntry), __compareHashMapEntry);
+}
+
+
 int __compareWordCount(const void *a, const void *b) {
 	WordCount* wc1 = (WordCount *)a;
 	WordCount* wc2 = (WordCount *)b;
@@ -181,7 +202,6 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 			for (int j = 0; j < entry.followerCount; j++) {
 				if (entry.followers[j].count <= threshhold) {
 					map->entries[i].followerCount = j;
-					// entry->followers[j] = ;
 					if (j == 0) {
 						map->entries[i].key[0] = '\0';
 					}
@@ -196,7 +216,8 @@ int main() {
     HashMap* map = initHashMap();
 	parseWord(map, "text3.txt");
 	sortWordFrequency(map);
-    filterLowFrequencyWords(map, 1);
+    // filterLowFrequencyWords(map, 1);
+	sortHashMap(map);
 	prettyPrintHashMap(map);
     return 0;
 }
