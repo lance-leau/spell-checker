@@ -6,6 +6,16 @@ struct node* initTree() {
         return createNode('_');
 }
 
+struct node* createNode (char value) {
+        struct node* newNode = (struct node*)malloc(sizeof(struct node));
+
+        newNode->value = value;
+        newNode->children = (struct node**)calloc(26, sizeof(struct node*));
+        newNode->isWord = 0;
+
+        return newNode;
+}
+
 void addWord(struct node* tree, const char* s)
 {
         struct node* current = tree;
@@ -94,7 +104,7 @@ void writeJSONToFile(json_object* jsonObj, const char* filename) {
     fclose(file);
 }
 
-
+/*
 int main (int argc, char** argv) {
     struct node* tree = initTree();
 
@@ -134,4 +144,4 @@ int main (int argc, char** argv) {
 
         return 0;
 }
-
+*/

@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "./Tree/tree.h"
-#include "./word_prediction/hash_map.c"
+#include "./word_prediction/hash_map.h"
 #include "./levenshtein/levenshtein.h"
 
 #define WORD_MAX_SIZE 45
@@ -20,12 +21,16 @@ char** parseTextToWord(char* input) {
 			ch -= 'a' - 'A';
 		}
 		if ('a' <= ch && ch <= 'z') {
-			curr[wordSize] = input[i];
+			curr[wordSize] = ch;
 			wordSize++;
 		} else {
-			ret[wordCount] = curr;
-			curr = calloc(WORD_MAX_SIZE, sizeof(char));
-			wordSize = 0;
+			if (wordSize > 0) {
+				curr[wordSize] = '\0';
+				ret[wordCount] = curr;
+				wordCount++;
+				curr = calloc(WORD_MAX_SIZE, sizeof(char));
+				wordSize = 0;
+			}
 		}
 	}
 
@@ -60,29 +65,28 @@ int main (int argc, char** argv) {
 	sortWordFrequency(map);
     filterLowFrequencyWords(map, 1);
 	sortHashMap(map);
-}
 
 
 	// Parse sentence to words --------------------------------------
 	char* txt = "helzo I wuold likr somme cheise.";
 	
-	/*
-	//char** ret = calloc(1000, sizeof(char*));
-	char** ret[500][500];
+	
+	char** ret = calloc(1000, sizeof(char*));
+	// char ret[500][500];
 
 	char** wordArr = parseTextToWord(txt);
 	char* prev = "_";
 
-	for (int i = 0; wordArr[i] != '\0'; i++) {
+	for (int i = 0; wordArr[i][0] != 0; i++) {
 		if (!isWord(tree, wordArr[i])) {
 			HashMapEntry* entry = findEntry(map, prev);
 			int min = 100;
 			char* currBest = calloc(MAX_WORD_SIZE, sizeof(char));
 			for (int j = 0; j < entry->followerCount; j++) {
-				int dist = distance(entry->key, wordArr[i]);
+				int dist = distance(entry->followers[j].word, wordArr[i]);
 				if (dist < min) {
 					min = dist;
-					currBest = entry->followers[j];
+					strcpy(currBest, entry->followers[j].word);
 				}
 			}
 			// TODO call phonetic distance.
@@ -91,6 +95,10 @@ int main (int argc, char** argv) {
 			ret[i] = wordArr[i];
 		}
 	}
-	*/
+
+	for (int i = 0; ret[i] != 0; i++) {
+		printf("%s ", ret[i]);
+	}
+	printf("\n");
 	return 0;
 }

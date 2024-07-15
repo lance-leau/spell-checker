@@ -5,7 +5,7 @@
 #define MAX_WORD_SIZE 50
 #define INITIAL_CAPACITY 16
 
-// define the structurs:
+// define the structures:
 
 // to keep track of how much a word was found after the key
 typedef struct {
@@ -29,11 +29,14 @@ typedef struct {
 } HashMap;
 
 // public function used in other files (hopefully)
-HashMapEntry* findEntry(HashMap* map, const char* key);
-int isKeyInHashMap(HashMap *map, const char* key);
-void prettyPrintHashMap(HashMap *map);
+HashMap* initHashMap();
+HashMapEntry* findEntry(HashMap* map, char* key);
+int isKeyInHashMap(HashMap *map, char* key);
 void addWordToHashMap(HashMap* map, char* key, char* follower);
 void parseWord(HashMap* map, char* filename);
-
+void sortWordFrequency(HashMap* map);
+void filterLowFrequencyWords(HashMap* map, int threshold);
+void sortHashMap(HashMap* map);
+void prettyPrintHashMap(HashMap *map);
 
 #endif

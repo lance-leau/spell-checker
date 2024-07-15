@@ -14,7 +14,7 @@ HashMap* initHashMap() {
 
 // hashes the word to easily find it later
 // in case of collision (unexpected/unlikely results) the problem is probably here
-unsigned int hash(const char* str) {
+unsigned int hash(char* str) {
     unsigned int hash = 5381; // try using another number if there is a problem with hashing
     int c;
     while ((c = *str++))
@@ -23,7 +23,7 @@ unsigned int hash(const char* str) {
 }
 
 // finds an entry by key
-HashMapEntry* findEntry(HashMap* map, const char* key) {
+HashMapEntry* findEntry(HashMap* map, char* key) {
     unsigned int index = hash(key) % map->capacity;
     while (map->entries[index].key[0] != '\0') {
         if (strcmp(map->entries[index].key, key) == 0) {
@@ -35,7 +35,7 @@ HashMapEntry* findEntry(HashMap* map, const char* key) {
 }
 
 // checks if key is in hash map
-int isKeyInHashMap(HashMap* map, const char* key) {
+int isKeyInHashMap(HashMap* map, char* key) {
     return findEntry(map, key) != NULL;
 }
 

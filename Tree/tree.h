@@ -11,17 +11,8 @@ struct node {
         int isWord;
 };
 
-struct node* createNode (char value) {
-        struct node* newNode = (struct node*)malloc(sizeof(struct node));
-
-        newNode->value = value;
-        newNode->children = (struct node**)calloc(26, sizeof(struct node*));
-        newNode->isWord = 0;
-
-        return newNode;
-}
-
 struct node* initTree();
+struct node* createNode (char value);
 void addWord(struct node* tree, const char* s);
 int isWord(struct node* tree, const char* s);
 void prettyPrint(struct node* tree, int level);
