@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "../levenshtein/levenshtein.h"
 
 // Function to remove a character at a given index
 char* removeChar(char* s, size_t index) {
@@ -197,13 +198,22 @@ char* crop(char* s) {
     return final_r;
 }
 
-int main() {
-    char* s = "metaphone";
-    char* r = crop(s);
+int isEqual(char* a, char* b)
+{
+	char* ca = crop(a);
+	char* cb = crop(b);
 
-    printf("Before: %s\n", s);
-    printf("After: %s\n", r);
-    free(r);
+	return distance(ca,cb) <= 2 ? 1 : 0;
+}
+int main() {
+    char* s = "Hzllo";
+    char* r = "Hello";
+    int c = isEqual(s,r);
+
+    if(c == 1)
+	    printf("This is good");
+    else
+	    printf("Not so good");
     return 0;
 }
 

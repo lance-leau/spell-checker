@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "levenshtein.h"
 
 int min(int a, int b)
 {
@@ -44,7 +42,7 @@ int distance(char* a, char* b)
 
 }
 
-int main() {
+/*int main() {
     
     char* a = "niche";
     char* b = "chien";
@@ -54,4 +52,4 @@ int main() {
     
 
     return 0;
-}
+}*/
