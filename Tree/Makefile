@@ -8,7 +8,7 @@ CFLAGS = -Wall -Werror -g
 TARGET = tree
 
 # Source files
-SRCS = tree.c
+SRCS = main.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
