@@ -134,6 +134,7 @@ void parseWord(HashMap* map, char* filename) {
 
     char ch;
     while ((ch = fgetc(file)) != EOF) {
+		if (ch == 44) continue;
         if ('A' <= ch && ch <= 'Z') {
 			ch += 'a' - 'A';
 		}
