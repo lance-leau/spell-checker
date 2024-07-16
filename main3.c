@@ -87,7 +87,7 @@ int main (int argc, char** argv)
 	sortHashMap(map);
 
 	// Parse sentence to words --------------------------------------
-	char* txt = "And there I was, alone againts the woeld";
+	char* txt = "So he huried on, keping to the ruogh raod that ran dwn the vally";
 	char** wordArr = parseTextToWord(txt);
 	char* prev = "_";
 
@@ -121,24 +121,29 @@ int main (int argc, char** argv)
 				{
 					printf("Fixed <%s> to <%s>\n", wordArr[i], currBest);
 					ret[i] = strdup(currBest);
+					prev = currBest;
 				}
 				else
 				{
 					printf("currBest us NULL\n");
 					ret[i] = strdup(wordArr[i]); // Fallback to original word
+					prev = wordArr[i];
 				}
 			}
 			else
 			{
 				printf("no entry found for %s\n", wordArr[i]);
 				ret[i] = strdup(wordArr[i]); // Fallback to original word
+				prev = wordArr[i];
 			}
 		}
 		else
 		{
 			ret[i] = strdup(wordArr[i]);
+			prev = wordArr[i];
+
 		}
-		prev = wordArr[i];
+		//prev = wordArr[i];
 	}
 
 	printf("output text: ");
@@ -152,12 +157,16 @@ int main (int argc, char** argv)
 
 	free(ret);
 
+	printf("Input text: ");
+
 	// Free the word array
 	for (int i = 0; wordArr[i] != NULL; i++)
 	{
+		printf("%s ", wordArr[i]);
 		free(wordArr[i]);
 	}
 	free(wordArr);
+	printf("\n");
 
 	return 0;
 }
