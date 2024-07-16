@@ -47,7 +47,7 @@ char** parseTextToWord(char* input) {
 }
 
 int main (int argc, char** argv) {
-struct node* tree = initTree();
+	struct node* tree = initTree();
     
     FILE* file;
     char line[256];
@@ -79,6 +79,7 @@ struct node* tree = initTree();
     char** ret = calloc(1000, sizeof(char*));
 
     for (int i = 0; wordArr[i] != NULL; i++) {
+		printf("yo1\n");
         if (!isWord(tree, wordArr[i])) {
             HashMapEntry* entry = findEntry(map, prev);
             if (entry != NULL) {
@@ -92,12 +93,14 @@ struct node* tree = initTree();
                     }
                 }
                 if (currBest != NULL) {
-		    printf("Current Best: %s", currBest);
+		    		printf("Current Best: %s\n", currBest);
                     ret[i] = strdup(currBest);
                 } else {
+					printf("currBest us NULL\n");
                     ret[i] = strdup(wordArr[i]); // Fallback to original word
                 }
             } else {
+				printf("no entry found for %s\n", wordArr[i]);
                 ret[i] = strdup(wordArr[i]); // Fallback to original word
             }
         } else {

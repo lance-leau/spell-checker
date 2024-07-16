@@ -24,13 +24,18 @@ unsigned int hash(char* str) {
 
 // finds an entry by key
 HashMapEntry* findEntry(HashMap* map, char* key) {
-    unsigned int index = hash(key) % map->capacity;
+    // unsigned int index = hash(key) % map->capacity;
+	unsigned int index = 0;
+	for (; index < map->size; index ++) {
+		if (strcmp(map->entries[index].key, key)) break;
+	}
     while (map->entries[index].key[0] != '\0') {
         if (strcmp(map->entries[index].key, key) == 0) {
             return &map->entries[index];
         }
         index = (index+1) % map->capacity;
     }
+	printf("no entry found for %s\n", key);
     return NULL;
 }
 
@@ -217,9 +222,20 @@ int main() {
     HashMap* map = initHashMap();
 	parseWord(map, "text3.txt");
 	sortWordFrequency(map);
-    // filterLowFrequencyWords(map, 1);
+    filterLowFrequencyWords(map, 1);
 	sortHashMap(map);
 	prettyPrintHashMap(map);
+
+	HashMapEntry* entry = findEntry(map, "i");
+
+	for (int i = 0; i < entry->followerCount; i++) {
+		if (entry->followers[i].word[0] != 0) {
+			printf("%s \n", entry->followers[i].word);
+		} else {
+			printf("NULL\n");
+		}
+	}
+
     return 0;
 }
 */
