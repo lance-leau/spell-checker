@@ -68,7 +68,7 @@ void prettyPrint(struct node* tree, int level) {
         prettyPrint(tree->children[i], level + 1);
     }
 }
-
+/*
 json_object* serializeNode(struct node* root) {
     json_object* jsonObj = json_object_new_object();
 
@@ -103,7 +103,7 @@ void writeJSONToFile(json_object* jsonObj, const char* filename) {
 
     fclose(file);
 }
-
+*/
 /*
 int main (int argc, char** argv) {
     struct node* tree = initTree();
