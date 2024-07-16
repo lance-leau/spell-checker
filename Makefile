@@ -11,7 +11,8 @@ LDFLAGS = -ljson-c
 SRCS = main2.c \
        Tree/tree.c \
        word_prediction/hash_map.c \
-       levenshtein/levenshtein.c
+       levenshtein/levenshtein.c \
+       metaphone/metaphone.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
