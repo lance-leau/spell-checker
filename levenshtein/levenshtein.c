@@ -63,8 +63,8 @@ int distance(const char* s1, const char* s2) {
     return result;
 }
 
-int main() {
+/*int main() {
     printf("%d\n", distance("road", "raod"));
     return 0;
-}
+}*/
 

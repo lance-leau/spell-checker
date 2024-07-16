@@ -1,21 +1,29 @@
 CC = gcc
+CFLAGS = -Wall -Wextra -I../levenshtein
 
-CFLAGS = -Wall -Werror -g
+# Directories
+LEVENSHTEIN_DIR = ../levenshtein
 
+# Source files
+SOURCES = metaphone.c $(LEVENSHTEIN_DIR)/levenshtein.c
+
+# Object files
+OBJECTS = $(SOURCES:.c=.o)
+
+# Executable
 TARGET = metaphone
 
-SRCS = metaphone.c
+# Default target
+all: $(TARGET)
 
-OBJS = $(SRCS:.c=.o)
-
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm -f $(OBJECTS) $(TARGET)
 
-.PHONY: clean
+.PHONY: all clean
 
