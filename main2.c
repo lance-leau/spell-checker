@@ -47,9 +47,7 @@ char** parseTextToWord(char* input) {
 }
 
 int main (int argc, char** argv) {
-	
-	// Init tree ---------------------------------------------------
-    struct node* tree = initTree();
+struct node* tree = initTree();
     
     FILE* file;
     char line[256];
@@ -57,59 +55,70 @@ int main (int argc, char** argv) {
  
     if (NULL == file) {
         printf("file can't be opened \n");
+        return 1;
     }
  
-    // printf("content of this file are \n");
- 
-    while (fgets(line, sizeof(line), file) != NULL) 
-    {
+    while (fgets(line, sizeof(line), file) != NULL) {
         line[strcspn(line, "\n\r")] = '\0';
-        addWord(tree,line);
+        addWord(tree, line);
     }
     fclose(file);
 
-	// Init Hash map ------------------------------------------------
+    // Init Hash map ------------------------------------------------
     HashMap* map = initHashMap();
-	parseWord(map, "./word_prediction/text3.txt");
-	sortWordFrequency(map);
+    parseWord(map, "./word_prediction/text3.txt");
+    sortWordFrequency(map);
     filterLowFrequencyWords(map, 1);
-	sortHashMap(map);
+    sortHashMap(map);
 
+    // Parse sentence to words --------------------------------------
+    char* txt = "helzo I wuold likr somme cheise.";
+    char** wordArr = parseTextToWord(txt);
+    char* prev = "_";
 
-	// Parse sentence to words --------------------------------------
-	char* txt = "helzo I wuold likr somme cheise.";
-	
-	
-	char** ret = calloc(1000, sizeof(char*));
-	// char ret[500][500];
+    char** ret = calloc(1000, sizeof(char*));
 
-	char** wordArr = parseTextToWord(txt);
-	char* prev = "_";
+    for (int i = 0; wordArr[i] != NULL; i++) {
+        if (!isWord(tree, wordArr[i])) {
+            HashMapEntry* entry = findEntry(map, prev);
+            if (entry != NULL) {
+                int min = 100;
+                char* currBest = NULL;
+                for (int j = 0; j < entry->followerCount; j++) {
+                    int dist = distance(entry->followers[j].word, wordArr[i]);
+                    if (dist < min) {
+                        min = dist;
+                        currBest = entry->followers[j].word;
+                    }
+                }
+                if (currBest != NULL) {
+		    printf("Current Best: %s", currBest);
+                    ret[i] = strdup(currBest);
+                } else {
+                    ret[i] = strdup(wordArr[i]); // Fallback to original word
+                }
+            } else {
+                ret[i] = strdup(wordArr[i]); // Fallback to original word
+            }
+        } else {
+            ret[i] = strdup(wordArr[i]);
+        }
+        prev = wordArr[i];
+    }
 
-	for (int i = 0; wordArr[i][0] != 0; i++) {
-		if (!isWord(tree, wordArr[i])) {
-			HashMapEntry* entry = findEntry(map, prev);
-			int min = 100;
-			char* currBest = calloc(MAX_WORD_SIZE, sizeof(char));
-			for (int j = 0; j < entry->followerCount; j++) {
-				int dist = distance(entry->followers[j].word, wordArr[i]);
-				if (dist < min) {
-					min = dist;
-					strcpy(currBest, entry->followers[j].word);
-				}
-			}
-			// TODO call phonetic distance.
-			ret[i] = currBest;
-		} else {
-			ret[i] = wordArr[i];
-		}
-	}
+    for (int i = 0; ret[i] != NULL; i++) {
+        printf("%s ", ret[i]);
+        free(ret[i]);
+    }
+    printf("\n");
 
-	for (int i = 0; ret[i] != 0; i++) {
-		printf("%s ", ret[i]);
-	}
-	printf("\n");
-	
+    free(ret);
+
+    // Free the word array
+    for (int i = 0; wordArr[i] != NULL; i++) {
+        free(wordArr[i]);
+    }
+    free(wordArr);	
 /*	char** p = parseTextToWord("Hello this is a test");
 	
 	for (int i = 0; i < 5; i++) 
