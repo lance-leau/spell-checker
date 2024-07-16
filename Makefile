@@ -8,7 +8,7 @@ CFLAGS = -Wall -I/usr/include/json-c
 LDFLAGS = -ljson-c
 
 # Source files
-SRCS = main2.c \
+SRCS = main3.c \
        Tree/tree.c \
        word_prediction/hash_map.c \
        levenshtein/levenshtein.c \

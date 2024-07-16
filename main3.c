@@ -73,7 +73,7 @@ int main (int argc, char** argv) {
     sortHashMap(map);
 
     // Parse sentence to words --------------------------------------
-    char* txt = "So he hurreid on keeoing to the rough raod that ran down the valley";
+    char* txt = "The cubs tumblem over each other in tze center of the cirrcle where their mothers and fahters sat";
     char** wordArr = parseTextToWord(txt);
     char* prev = "_";
 

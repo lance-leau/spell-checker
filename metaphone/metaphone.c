@@ -205,10 +205,10 @@ int isEqual(char* a, char* b)
 
         return distance(ca,cb) <= 1 ? 1 : 0;
 }
-
-/*int main() {
-    char* s = "raod";
-    char* r = "road";
+/*
+int main() {
+    char* s = "keeping";
+    char* r = "keeoing";
 
     if(isEqual(s,r))
 	    printf("Nice");
