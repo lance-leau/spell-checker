@@ -175,25 +175,41 @@ char** parseTextToWord(char* input)
 	return ret;
 }
 
+// Auxiliary function to fix a word
+char* fixWord(char* word, HashMap* map, char* prev) {
+    HashMapEntry* entry = findEntry(map, prev);
+    if (entry != NULL) {
+        int min = 100;
+        char* currBest = NULL;
+        for (int j = 0; j < entry->followerCount; j++) {
+            int soundSame = isEqual(entry->followers[j].word, word);
+            int dist = distance(entry->followers[j].word, word);
+            if (soundSame == 1 && entry->followers[j].word[0] == word[0] && dist < 3) {
+                if (dist < min) {
+                    min = dist;
+                    currBest = entry->followers[j].word;
+                }
+            }
+        }
+        if (currBest != NULL) {
+            printf("Fixed <%s> to <%s>\n", word, currBest);
+            return strdup(currBest);
+        } else {
+            printf("currBest is NULL\n");
+            return strdup(word); // Fallback to original word
+        }
+    } else {
+        printf("no entry found for %s\n", word);
+        return strdup(word); // Fallback to original word
+    }
+}
+
+
 void process(const gchar *input_text, gchar **output_text) {
-    struct node* tree = initTree();
 
-    FILE* file;
-    char line[256];
-    file = fopen("../Tree/text_100k.txt", "r");
-
-    if (file == NULL) {
-        printf("file can't be opened \n");
-        *output_text = g_strdup("Error: File cannot be opened.");
-        return;
-    }
-
-    while (fgets(line, sizeof(line), file) != NULL) {
-        line[strcspn(line, "\n\r")] = '\0';
-        addWord(tree, line);
-    }
-    fclose(file);
-
+    struct node* tree = buildTreeFromFile("../Tree/text_100k.txt");
+    struct node* treeNames = buildTreeFromFile("../Tree/names.txt");
+    struct node* treePlace = buildTreeFromFile("../Tree/places2.txt");
     // Init Hash map
     HashMap* map = initHashMap();
     parseWord(map, "../word_prediction/text3.txt");
@@ -211,36 +227,19 @@ void process(const gchar *input_text, gchar **output_text) {
 
     for (int i = 0; wordArr[i] != NULL; i++) {
         if (!isWord(tree, wordArr[i])) {
-            HashMapEntry* entry = findEntry(map, prev);
-            if (entry != NULL) {
-                int min = 100;
-                char* currBest = NULL;
-                for (int j = 0; j < entry->followerCount; j++) {
-                    int soundSame = isEqual(entry->followers[j].word, wordArr[i]);
-                    int dist = distance(entry->followers[j].word, wordArr[i]);
-                    if (soundSame == 1 && entry->followers[j].word[0] == wordArr[i][0] && dist < 3) {
-                        if (dist < min) {
-                            min = dist;
-                            currBest = entry->followers[j].word;
-                        }
-                    }
-                }
-                if (currBest != NULL) {
-                    printf("Fixed <%s> to <%s>\n", wordArr[i], currBest);
-                    ret[i] = strdup(currBest);
-                    prev = currBest;
-                } else {
-                    printf("currBest is NULL\n");
-                    ret[i] = strdup(wordArr[i]); // Fallback to original word
-                    prev = wordArr[i];
-                }
-            } else {
-                printf("no entry found for %s\n", wordArr[i]);
-                ret[i] = strdup(wordArr[i]); // Fallback to original word
-                prev = wordArr[i];
-            }
+		
+		if(isWord(treeNames, wordArr[i]))//If it is a name, put prev as he/she
+				prev = "he";
+		else if (isWord(treePlace, wordArr[i]))//If it is a place (countries/towns), put prev as it
+				prev = "it";
+		else
+		{	
+			//Might to add if not fixed, highlight in red
+			ret[i] = fixWord(wordArr[i], map, prev);
+            		prev = ret[i];
+		}
         } else {
-            ret[i] = strdup(wordArr[i]);
+            ret[i] = fixWord(wordArr[i], map, prev);
             prev = wordArr[i];
         }
     }

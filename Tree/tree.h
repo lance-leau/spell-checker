@@ -14,6 +14,7 @@ struct node* initTree();
 struct node* createNode (char value);
 void addWord(struct node* tree, const char* s);
 int isWord(struct node* tree, const char* s);
+struct node*  buildTreeFromFile(char* text);
 void prettyPrint(struct node* tree, int level);
 /*
  * json_object* serializeNode(struct node* root);
