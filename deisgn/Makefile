@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = `pkg-config --cflags gtk+-3.0`
 LDFLAGS = `pkg-config --libs gtk+-3.0`
-SRC = new2.c ../Tree/tree.c ../word_prediction/hash_map.c ../levenshtein/levenshtein.c ../metaphone/metaphone.c
+SRC = new.c ../Tree/tree.c ../word_prediction/hash_map.c ../levenshtein/levenshtein.c ../metaphone/metaphone.c
 OBJ = $(SRC:.c=.o)
 TARGET = gtk_example
 

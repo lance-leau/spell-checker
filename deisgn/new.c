@@ -82,9 +82,21 @@ char** parser(const gchar* text) {
     return r;
 }
 
+void correct_typos(char *text, char* old, char* new) {
+    // Example correction: replace 'teh' with 'the'
+    char *pos = strstr(text,old);
+    printf("Pos: %s\n New: %s\n", text, new);
+    if (pos != NULL) {
+        strncpy(pos, new, strlen(new));
+    }
+}
+
+
 // Callback function to handle text changes in the entry widget
 static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
     const gchar *text = gtk_entry_get_text(entry);
+    char *current_text = g_strdup(text);
+
     CallbackData *data = (CallbackData *)user_data;
 
     size_t n = strlen(text);
@@ -105,15 +117,27 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
                 prev = "it";
             else 
 	    {
+
 		//prev = fixWord(cur, data->map, prev);
 		char* tmp = fixWord(cur, data->map, prev);
-                printf("Word: %s\nCorrected Word: %s\n\n", cur, tmp);
+		correct_typos(current_text, cur, tmp);
+
+		if (g_strcmp0(current_text, text) != 0)
+	       	{
+        		g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
+        		gtk_entry_set_text(entry, current_text);
+        		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
+	    	}
+
+		free(current_text);
+
+               // printf("Word: %s\nCorrected Word: %s\n\n", cur, tmp);
 
             }
         } else 
 	{
 	    char* t = fixWord(cur, data->map, prev);		
-            printf("Word: %s\nCorrected Word: %s\n\n", cur,  t);
+           // printf("Word: %s\nCorrected Word: %s\n\n", cur,  t);
 	    prev = cur;
         }
 
