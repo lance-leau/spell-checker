@@ -92,56 +92,30 @@ void prettyPrint(struct node* tree, int level) {
         prettyPrint(tree->children[i], level + 1);
     }
 }
-/*
-json_object* serializeNode(struct node* root) {
-    json_object* jsonObj = json_object_new_object();
 
-    // Add 'value' field
-    json_object_object_add(jsonObj, "value", json_object_new_string_len(&root->value, 1));
-
-    // Add 'isWord' field
-    json_object_object_add(jsonObj, "isWord", json_object_new_int(root->isWord));
-
-    // Add 'children' field as an array
-    json_object* childrenArray = json_object_new_array();
-    for (int i = 0; i < 26; ++i) {
-        if (root->children[i] != NULL) {
-            json_object_array_add(childrenArray, serializeNode(root->children[i]));
-        }
-    }
-    json_object_object_add(jsonObj, "children", childrenArray);
-
-    return jsonObj;
-}
-
-// Function to write JSON data to a file
-void writeJSONToFile(json_object* jsonObj, const char* filename) {
-    FILE* file = fopen(filename, "w");
-    if (!file) {
-        perror("Error opening file");
+void destroyTree(struct node* root) {
+    if (root == NULL) {
         return;
     }
-
-    const char* jsonString = json_object_to_json_string_ext(jsonObj, JSON_C_TO_STRING_PRETTY);
-    fprintf(file, "%s\n", jsonString);
-
-    fclose(file);
+    
+    if (root->children != NULL) {
+        int i = 0;
+        while (root->children[i] != NULL) {
+            destroyTree(root->children[i]);
+            i++;
+        }
+        free(root->children);
+    }
+    
+    free(root);
 }
-
+/*
 int main (int argc, char** argv) {
 
 	struct node* words = buildTreeFromFile("text_100k.txt");
 	prettyPrint(words,0);
 	free(words);
-    //json_object* jsonRoot = serializeNode(tree);
-
-    // Write JSON data to a file
-    //writeJSONToFile(jsonRoot, "tree.json");
-
-    // Clean up
-    //json_object_put(jsonRoot);
-    
+   
 
         return 0;
-}
-*/
+}*/
