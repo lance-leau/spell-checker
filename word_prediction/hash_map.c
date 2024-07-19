@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash_map.h"
+#include <time.h>
 
 // Initialize a hash map
 HashMap* initHashMap() {
@@ -15,20 +16,22 @@ HashMap* initHashMap() {
 // hashes the word to easily find it later
 // in case of collision (unexpected/unlikely results) the problem is probably here
 unsigned int hash(char* str) {
-    unsigned int hash = 5381; // try using another number if there is a problem with hashing
+    unsigned int hash = 0; // try using another number if there is a problem with hashing
     int c;
     while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
+        hash = (hash*31 + c) % INITIAL_CAPACITY;
     return hash;
 }
 
 // finds an entry by key
 HashMapEntry* findEntry(HashMap* map, char* key) {
-    // unsigned int index = hash(key) % map->capacity;
+    unsigned int index = hash(key) % map->capacity;
+	/*
 	unsigned int index = 0;
 	for (; index < map->size; index ++) {
 		if (strcmp(map->entries[index].key, key)) break;
 	}
+	*/
     while (map->entries[index].key[0] != '\0') {
         if (strcmp(map->entries[index].key, key) == 0) {
             return &map->entries[index];
@@ -131,14 +134,17 @@ void parseWord(HashMap* map, char* filename) {
 	int currWordSize = 0;
 
 	char* prev = NULL;
+	
+	unsigned int currLine = 0;
 
     char ch;
-    while ((ch = fgetc(file)) != EOF) {
+    while (currLine <= MAX_LINE && (ch = fgetc(file)) != EOF) {
 		if (ch == 44) continue;
+		if (ch == '\n') currLine++;
         if ('A' <= ch && ch <= 'Z') {
 			ch += 'a' - 'A';
 		}
-		if (('a' <= ch && ch <= 'z') || (ch == 39 || ch == '-')) {
+		if (('a' <= ch && ch <= 'z') || (ch == '\'' || ch == '-')) {
 			currWord[currWordSize] = ch;
 			currWordSize++;
 		} else {
@@ -218,15 +224,19 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 	}	
 }
 
-/*
+
 int main() {
+
+	clock_t begin = clock();
+
     HashMap* map = initHashMap();
-	parseWord(map, "text3.txt");
+	parseWord(map, "text4.txt");
 	sortWordFrequency(map);
     filterLowFrequencyWords(map, 1);
 	sortHashMap(map);
 	prettyPrintHashMap(map);
 
+	/*
 	HashMapEntry* entry = findEntry(map, "i");
 
 	for (int i = 0; i < entry->followerCount; i++) {
@@ -236,7 +246,13 @@ int main() {
 			printf("NULL\n");
 		}
 	}
+	*/
+	printf("%i\n", map->capacity);
+
+	clock_t end = clock();
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("time: %lf\n", time_spent);
 
     return 0;
 }
-*/
+
