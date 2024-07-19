@@ -145,27 +145,27 @@ void parseWord(HashMap* map, char* filename) {
 			ch += 'a' - 'A';
 		}
 		if (('a' <= ch && ch <= 'z') || (ch == '\'' || ch == '-')) {
-			currWord[currWordSize] = ch;
-			currWordSize++;
+			if (currWordSize < MAX_WORD_SIZE -1) {
+				currWord[currWordSize] = ch;
+				currWordSize++;
+			}
 		} else {
 			if (currWordSize != 0) {
+				currWord[currWordSize] = '\0';
 				if (prev != NULL) {
 					addWordToHashMap(map, prev, currWord);
+					free(prev);
 				} else {
 					addWordToHashMap(map, "_", currWord);
 				}
-				prev = calloc(MAX_WORD_SIZE, sizeof(char));
-				for (int i = 0; currWord[i] != 0; i++) {
-					prev[i] = currWord[i];
-				}
-				free(currWord);
-				currWord = calloc(MAX_WORD_SIZE, sizeof(char));
+				prev = strdup(currWord);
 				currWordSize = 0;
 			} else {
 				prev = NULL;
 			}
 		}
     }
+	free(currWord);
 
     fclose(file);
 }
@@ -224,17 +224,17 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 	}	
 }
 
-
+/*
 int main() {
 
 	clock_t begin = clock();
 
     HashMap* map = initHashMap();
-	parseWord(map, "text4.txt");
+	parseWord(map, "text.txt");
 	sortWordFrequency(map);
-    filterLowFrequencyWords(map, 1);
+    // filterLowFrequencyWords(map, 1);
 	sortHashMap(map);
-	prettyPrintHashMap(map);
+	// prettyPrintHashMap(map);
 
 	/*
 	HashMapEntry* entry = findEntry(map, "i");
@@ -247,12 +247,12 @@ int main() {
 		}
 	}
 	*/
-	printf("%i\n", map->capacity);
+	printf("%i\n", map->size);
 
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("time: %lf\n", time_spent);
 
     return 0;
-}
-
+}i
+*/

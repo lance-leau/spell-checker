@@ -3,8 +3,8 @@
 
 // define the constants
 #define MAX_WORD_SIZE 15
-#define INITIAL_CAPACITY 65536
-#define MAX_LINE 100000
+#define INITIAL_CAPACITY 131072
+#define MAX_LINE 500000
 
 // define the structures:
 
