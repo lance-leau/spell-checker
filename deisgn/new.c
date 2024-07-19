@@ -17,6 +17,15 @@ typedef struct {
     HashMap* map;
 } CallbackData;
 
+void parsePunctuation(char* word)
+{
+	size_t n = strlen(word);
+	char c = word[n-1];
+
+	if(c == '.' || c == ',' || c == ';' || c == ':'  || c == '!' || c == '?')
+		word[n-1] = 0;
+}
+
 char* fixWord(char* word, HashMap* map, char* prev) {
     HashMapEntry* entry = findEntry(map, prev);
     if (entry != NULL) {
@@ -83,8 +92,9 @@ char** parser(const gchar* text) {
 }
 
 void correct_typos(char *text, char* old, char* new) {
-    // Example correction: replace 'teh' with 'the'
-    char *pos = strstr(text,old);
+
+    char *pos = strstr(text,old);//Search the first occurance of old in the text
+
     printf("Pos: %s\n New: %s\n", text, new);
     if (pos != NULL) {
         strncpy(pos, new, strlen(new));
@@ -117,9 +127,8 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
                 prev = "it";
             else 
 	    {
-
 		//prev = fixWord(cur, data->map, prev);
-		char* tmp = fixWord(cur, data->map, prev);
+		char* tmp = fixWord(parsePunctuation(cur), data->map, parsePunctuation(prev));
 		correct_typos(current_text, cur, tmp);
 
 		if (g_strcmp0(current_text, text) != 0)
@@ -136,7 +145,8 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
             }
         } else 
 	{
-	    char* t = fixWord(cur, data->map, prev);		
+	    char* t = fixWord(parsePunctuation(cur), data->map, parsePunctuation(prev));
+
            // printf("Word: %s\nCorrected Word: %s\n\n", cur,  t);
 	    prev = cur;
         }
