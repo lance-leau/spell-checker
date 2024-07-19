@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hash_map.h"
-#include <time.h>
+// #include <time.h>
 
 // Initialize a hash map
 HashMap* initHashMap() {
@@ -19,7 +19,7 @@ unsigned int hash(char* str) {
     unsigned int hash = 0; // try using another number if there is a problem with hashing
     int c;
     while ((c = *str++))
-        hash = (hash*31 + c) % INITIAL_CAPACITY;
+        hash = (hash*31 + c);
     return hash;
 }
 
@@ -150,7 +150,9 @@ void parseWord(HashMap* map, char* filename) {
 				currWordSize++;
 			}
 		} else {
-			if (currWordSize != 0) {
+			if (ch == '\n' || currWordSize == 0) {
+				prev = NULL;
+			} else {
 				currWord[currWordSize] = '\0';
 				if (prev != NULL) {
 					addWordToHashMap(map, prev, currWord);
@@ -160,8 +162,6 @@ void parseWord(HashMap* map, char* filename) {
 				}
 				prev = strdup(currWord);
 				currWordSize = 0;
-			} else {
-				prev = NULL;
 			}
 		}
     }
@@ -226,18 +226,16 @@ void filterLowFrequencyWords(HashMap* map, int threshhold) {
 
 /*
 int main() {
-
 	clock_t begin = clock();
 
     HashMap* map = initHashMap();
 	parseWord(map, "text.txt");
 	sortWordFrequency(map);
     // filterLowFrequencyWords(map, 1);
-	sortHashMap(map);
+	// sortHashMap(map);
 	// prettyPrintHashMap(map);
 
-	/*
-	HashMapEntry* entry = findEntry(map, "i");
+	HashMapEntry* entry = findEntry(map, "wife");
 
 	for (int i = 0; i < entry->followerCount; i++) {
 		if (entry->followers[i].word[0] != 0) {
@@ -246,13 +244,12 @@ int main() {
 			printf("NULL\n");
 		}
 	}
-	*/
-	printf("%i\n", map->size);
 
+	printf("%i\n", map->size);
 	clock_t end = clock();
 	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("time: %lf\n", time_spent);
 
     return 0;
-}i
+}
 */
