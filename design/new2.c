@@ -44,7 +44,7 @@ char* fixWord(char* word, HashMap* map, char* prev) {
         return strdup(word); // Fallback to original word
     }
 }
-
+//Parse the last words of the text
 char** parser(const gchar* text) {
     size_t n = strlen(text);
     char** r = malloc(sizeof(char*) * 2); // Allocate space for 2 words
@@ -82,15 +82,51 @@ char** parser(const gchar* text) {
     return r;
 }
 
-void correct_typos(char *text, char* old, char* new) {
-    // Example correction: replace 'teh' with 'the'
-    char *pos = strstr(text,old);
-    printf("Pos: %s\n New: %s\n", text, new);
+void correct_typos(char *text, const char *old, const char *new) {
+    char *pos = strstr(text, old);
     if (pos != NULL) {
-        strncpy(pos, new, strlen(new));
+        size_t old_len = strlen(old);
+        size_t new_len = strlen(new);
+        size_t tail_len = strlen(pos + old_len);
+
+        // Move the tail part of the text to adjust for the new length
+        if (new_len != old_len) {
+            memmove(pos + new_len, pos + old_len, tail_len + 1);
+        }
+
+        // Copy the new word into position
+        strncpy(pos, new, new_len);
     }
 }
 
+
+/*
+void correct_typos(char *text, char* old, char* new) {
+    char *pos = strstr(text,old);
+    //printf("Pos: %s\n New: %s\n", old, new);
+    size_t n = strlen(new);
+    if (pos != NULL) {
+	
+	 size_t n = strlen(new);
+	 size_t m = strlen(old);
+	 size_t nm = strlen(text);
+	//size_t n = max(strlen(new), strlen(old));
+        strncpy(pos, new, n);
+
+	 if(m > n)
+	 {
+	 	size_t diff = m-n;
+		printf("Diff: %lu\n", diff);
+
+		for(size_t i = 1; i <= diff; i++)
+		{
+	       		text[nm-i] = ' ';
+		}
+
+	 }
+    }
+}
+*/
 
 // Callback function to handle text changes in the entry widget
 static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
@@ -112,7 +148,10 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 
         if (!isWord(data->tree, cur)) {
             if (isWord(data->treeNames, cur)) // If it is a name, put prev as he/she
+	    {
+		printf("A name has been found");
                 prev = "he";
+	    }
             else if (isWord(data->treePlace, cur)) // If it is a place (countries/towns), put prev as it
                 prev = "it";
             else 
