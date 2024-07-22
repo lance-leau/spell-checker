@@ -8,7 +8,7 @@
 #include "../levenshtein/levenshtein.h"
 #include "../metaphone/metaphone.h"
 
-#define WORD_MAX_SIZE 45
+#define WORD_MAX_SIZE 15
 
 typedef struct {
     struct node* tree;
@@ -36,7 +36,7 @@ char* fixWord(char* word, HashMap* map, char* prev) {
             printf("Fixed <%s> to <%s>\n", word, currBest);
             return strdup(currBest);
         } else {
-            printf("currBest is NULL\n");
+            printf("Cou;n't find a fix for <%s>\n", word);
             return strdup(word); // Fallback to original word
         }
     } else {
