@@ -9,25 +9,26 @@
 // Define the structures ------------------------------------------------------
 typedef struct {
 // to keep track of how much a word was found after the key
-    char word[MAX_WORD_SIZE];
-    int count;
+	char word[MAX_WORD_SIZE];
+	int count;
 } WordCount;
 
 
 typedef struct {
 // a key and a list of struct WordCount
-    char key[MAX_WORD_SIZE];
-    WordCount* followers;
-    int followerCount;
-    int followerCapacity;
+	char key[MAX_WORD_SIZE];
+	WordCount* followers;
+	int followerCount;
+	int followerTotal;
+	int followerCapacity;
 } HashMapEntry;
 
 
 typedef struct {
 // the hash map itself with a list of entries
-    HashMapEntry *entries;
-    int size;
-    int capacity;
+	HashMapEntry *entries;
+	int size;
+	int capacity;
 } HashMap;
 
 

@@ -72,9 +72,9 @@ void resizeHashMap(HashMap* map) {
 
 // adds a word to the given hash map
 void addWordToHashMap(HashMap* map, char* key, char* follower) {
-	if (map->size >= map->capacity / 2) {
-		resizeHashMap(map);
-	}
+	// if (map->size >= map->capacity / 2) {
+	//     resizeHashMap(map);
+	// }
 
 	unsigned int index = hash(key) % map->capacity;
 	while (map->entries[index].key[0] != '\0') {
@@ -88,9 +88,12 @@ void addWordToHashMap(HashMap* map, char* key, char* follower) {
 		strcpy(map->entries[index].key, key);
 		map->entries[index].followers = calloc(INITIAL_CAPACITY, sizeof(WordCount));
 		map->entries[index].followerCount = 0;
+		map->entries[index].followerTotal = 0;
 		map->entries[index].followerCapacity = INITIAL_CAPACITY;
 		map->size++;
 	}
+
+	map->entries[index].followerTotal++;
 
 	for (int i = 0; i < map->entries[index].followerCount; i++) {
 		if (strcmp(map->entries[index].followers[i].word, follower) == 0) {
@@ -114,7 +117,7 @@ void addWordToHashMap(HashMap* map, char* key, char* follower) {
 void prettyPrintHashMap(HashMap *map) {
 	for (int i = 0; i < map->capacity; i++) {
 		if (map->entries[i].key[0] != '\0') {
-			printf("%s:", map->entries[i].key);
+			printf("%s [%i dist followers, %i total followers]:", map->entries[i].key, map->entries[i].followerCount, map->entries[i].followerTotal);
 			for (int j = 0; j < map->entries[i].followerCount; j++) {
 				printf(" %s (%d)", map->entries[i].followers[j].word, map->entries[i].followers[j].count);
 			}
@@ -262,6 +265,8 @@ int main() {
 
 	sortWordFrequency(map);
 	printf("Numbers of entries: %i\n", map->size);
+
+	// prettyPrintHashMap(map);
 
 	// clock_t end = clock();
 	// double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
