@@ -22,33 +22,16 @@ typedef struct {
 char* fixWord(char* word, HashMap* map, char* prev) {
 	HashMapEntry* entry = findEntry(map, prev);
 	if (entry != NULL) {
-		prev = tolower(prev);
 		int min = 100;
 		char* currBest = NULL;
-		if(prev == "he" || prev == "she" || prev = "it")//Handle the 3rd person correction
-		{
-			for (int j = 0; j < entry->followerCount; j++) {
-                                int soundSame = isEqual(entry->followers[j].word, word);
-                                int dist = distance(entry->followers[j].word, word);
-                                if (soundSame == 1 && entry->followers[j].word[0] == word[0] && dist < 3) {
-                                        if (dist < min) {
-                                                min = dist;
-                                                currBest = entry->followers[j].word;
-                                        }
-                                }
-                        }
 
-		}
-		else
-		{
-			for (int j = 0; j < entry->followerCount; j++) {
-				int soundSame = isEqual(entry->followers[j].word, word);
-				int dist = distance(entry->followers[j].word, word);
-				if (soundSame == 1 && entry->followers[j].word[0] == word[0] && dist < 3) {
-					if (dist < min) {
-						min = dist;
-						currBest = entry->followers[j].word;
-					}
+		for (int j = 0; j < entry->followerCount; j++) {
+			int soundSame = isEqual(entry->followers[j].word, word);
+			int dist = distance(entry->followers[j].word, word);
+			if (soundSame == 1 && entry->followers[j].word[0] == word[0] && dist < 3) {
+				if (dist < min) {
+					min = dist;
+					currBest = entry->followers[j].word;
 				}
 			}
 		}

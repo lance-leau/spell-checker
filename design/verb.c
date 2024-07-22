@@ -1,15 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
-// Verb structure to hold conjugations
-typedef struct {
-    char base[8521];
-    char present_singular[8521];
-    char present_participle[8521];
-    char past[8521];
-    char past_participle[8521];
-} Verb;
+#include "verb.h"
 
 // Function to load verbs from file
 int load_verbs(const char *filename, Verb **verbs) {
@@ -96,7 +86,7 @@ void correct_verb_form(char *subject, char *verb, char *corrected_sentence, cons
         sprintf(corrected_sentence, "%s %s", subject, verb);
     }
 }
-
+/*
 int main() {
     const char* filename = "verbs_parsed.txt";
     Verb* verbs;
@@ -120,4 +110,4 @@ int main() {
     return 0;
 }
 
-
+*/
