@@ -10,7 +10,7 @@
 
 #define WORD_MAX_SIZE 45
 
-void correct_typos(GtkEntry *entry, const char *old, const char *new);
+void correct_typos(GtkEntry *entry, const char *old, char *new, const char *prev);
 
 typedef struct {
 	struct node* tree;
@@ -19,9 +19,25 @@ typedef struct {
 	HashMap* map;
 } CallbackData;
 
+char* to_lower(char* c)
+{
+	size_t n = strlen(c);
+	char* r = malloc(sizeof(char) * (n+1));
+
+	for(size_t i = 0; i < n; i++)
+	{
+		r[i] = tolower(c[i]);
+	}
+	r[n] = 0;
+
+	return r;
+}
+
+
 char* fixWord(char* word, HashMap* map, char* prev) {
 	HashMapEntry* entry = findEntry(map, prev);
 	if (entry != NULL) {
+		puts(word);
 		int min = 100;
 		char* currBest = NULL;
 
@@ -81,9 +97,17 @@ char** parser(const gchar* text) {
 		i--;
 	}
 
+	if (indR == 2 && r[1][strlen(r[1]) - 1] == '.') {
+		free(r[1]);
+		r[1] = malloc(sizeof(char) * 2);
+		strcpy(r[1], "_");
+	}
+
 	free(w);
 	return r;
 }
+
+
 
 static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 	const gchar *text = gtk_entry_get_text(entry);
@@ -104,6 +128,8 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 		char** r = parser(text);
 		char* cur = r[0];
 		char* prev = (r[1] != NULL) ? r[1] : "_";
+		//cur = to_lower(cur);
+		//prev = to_lower(prev);
 
 		if (!isWord(data->tree, cur)) {
 			if (isWord(data->treeNames, cur)) {
@@ -112,14 +138,14 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 			} else if (isWord(data->treePlace, cur)) {
 				prev = "it";
 			} else {
-				char* tmp = fixWord(cur, data->map, prev);
-				correct_typos(entry, cur, tmp);
+				char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev));
+				correct_typos(entry, cur, tmp, prev);
 
 				free(tmp);
 			}
 		} else {
-			char* t = fixWord(cur, data->map, prev);
-			correct_typos(entry, cur, t);
+			char* t = fixWord(to_lower(cur), data->map, to_lower(prev));
+			correct_typos(entry, cur, t, prev);
 
 			free(t);
 			prev = cur;
@@ -135,10 +161,18 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 
 
 
-void correct_typos(GtkEntry *entry, const char *old, const char *new) {
+void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev) {
 	const gchar *text = gtk_entry_get_text(entry);
 	char *pos = strstr(text, old);
+
 	if (pos != NULL) {
+
+		printf("PREV IS: %s\n", prev);
+		if(strcmp(prev, "_") == 0)
+		{
+			new[0] = toupper(new[0]);
+			printf("TOUPPER: %s\n",new);
+		}
 		// Identify any trailing punctuation
 		size_t old_len = strlen(old);
 		size_t new_len = strlen(new);
@@ -176,32 +210,7 @@ void correct_typos(GtkEntry *entry, const char *old, const char *new) {
 		g_free(new_text);
 	}
 }
-/*
 
-   void correct_typos(char *text, const char *old, const char *new) {
-   char *pos = strstr(text, old);
-   if (pos != NULL) {
-   size_t old_len = strlen(old);
-   size_t new_len = strlen(new);
-   size_t tail_len = strlen(pos + old_len);
-
-// Move the tail part of the text to adjust for the new length
-if (new_len != old_len) {
-memmove(pos + new_len, pos + old_len, tail_len + 1);
-}
-
-// Copy the new word into position
-memcpy(pos, new, new_len);
-printf("Current text: %s\n", text);
-
-if(new_len < old_len)
-{
-pos[new_len+tail_len] = 0;
-}	
-}
-}
-
-*/
 
 int main(int argc, char *argv[]) {
 	// Initialization of trees + hashmap
