@@ -207,8 +207,8 @@ int isEqual(char* a, char* b)
 }
 /*
 int main() {
-    char* s = "keeping";
-    char* r = "keeoing";
+    char* s = "play";
+    char* r = "plays";
 
     if(isEqual(s,r))
 	    printf("Nice");
@@ -216,5 +216,5 @@ int main() {
 	    printf("Shut up");
     
     return 0;
-}
-*/
+}*/
+

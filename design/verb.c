@@ -1,4 +1,3 @@
-
 #include "verb.h"
 
 // Function to load verbs from file
@@ -31,7 +30,13 @@ int load_verbs(const char *filename, Verb **verbs) {
         }
 
         Verb *verb = &(*verbs)[count];
-        sscanf(line, "%[^,],%[^,],%[^,],%[^,],%s",
+        verb->base = malloc(50 * sizeof(char));
+        verb->present_singular = malloc(50 * sizeof(char));
+        verb->present_participle = malloc(50 * sizeof(char));
+        verb->past = malloc(50 * sizeof(char));
+        verb->past_participle = malloc(50 * sizeof(char));
+
+        sscanf(line, "%49[^,],%49[^,],%49[^,],%49[^,],%49s",
                verb->base, verb->present_singular, verb->present_participle, verb->past, verb->past_participle);
         count++;
     }
@@ -69,24 +74,32 @@ int is_past_tense(const char* word, const Verb* verb) {
 }
 
 // Function to correct the verb form
-void correct_verb_form(char *subject, char *verb, char *corrected_sentence, const Verb* verbs, size_t verb_count) {
-    const Verb* verb_entry = find_verb(verb, verbs, verb_count);
+char* correct_verb_form(const char *prev, const char *cur, const Verb* verbs, size_t verb_count) {
+    const Verb* verb_entry = find_verb(cur, verbs, verb_count);
+    char* corrected_verb = malloc(50 * sizeof(char));
+    if (!corrected_verb) {
+        perror("Unable to allocate memory");
+        return NULL;
+    }
+
     if (verb_entry) {
-        if (is_pronoun(subject)) {
-            if (!is_past_tense(verb, verb_entry)) {
-                sprintf(corrected_sentence, "%s %s", subject, verb_entry->present_singular);
+        if (is_pronoun(prev)) {
+            if (!is_past_tense(cur, verb_entry)) {
+                strcpy(corrected_verb, verb_entry->present_singular);
             } else {
-                sprintf(corrected_sentence, "%s %s", subject, verb);
+                strcpy(corrected_verb, cur);
             }
         } else {
-            sprintf(corrected_sentence, "%s %s", subject, verb);
+            strcpy(corrected_verb, cur);
         }
     } else {
-        // If verb not found in dictionary, leave it as it is
-        sprintf(corrected_sentence, "%s %s", subject, verb);
+        // If verb not found in dictionary, return it as is
+        strcpy(corrected_verb, cur);
     }
+
+    return corrected_verb;
 }
-/*
+
 int main() {
     const char* filename = "verbs_parsed.txt";
     Verb* verbs;
@@ -96,18 +109,23 @@ int main() {
         return 1;
     }
 
-    char sentence[] = "he play";
-    char corrected_sentence[100];
+    const char* prev = "he";
+    const char* cur = "play";
 
-    char subject[50], verb[50];
-    sscanf(sentence, "%s %s", subject, verb);
+    char* corrected_verb = correct_verb_form(prev, cur, verbs, verb_count);
+    if (corrected_verb) {
+        printf("Corrected verb: %s\n", corrected_verb);
+        free(corrected_verb);
+    }
 
-    correct_verb_form(subject, verb, corrected_sentence, verbs, verb_count);
-
-    printf("Corrected sentence: %s\n", corrected_sentence);
-
+    for (size_t i = 0; i < verb_count; i++) {
+        free(verbs[i].base);
+        free(verbs[i].present_singular);
+        free(verbs[i].present_participle);
+        free(verbs[i].past);
+        free(verbs[i].past_participle);
+    }
     free(verbs);
+    
     return 0;
 }
-
-*/
