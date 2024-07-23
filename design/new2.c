@@ -7,7 +7,7 @@
 #include "../word_prediction/hash_map.h"
 #include "../levenshtein/levenshtein.h"
 #include "../metaphone/metaphone.h"
-
+#include "verb.h"
 #define WORD_MAX_SIZE 45
 
 void correct_typos(GtkEntry *entry, const char *old, char *new, const char *prev);
@@ -53,6 +53,23 @@ char* fixWord(char* word, HashMap* map, char* prev) {
 		}
 		if (currBest != NULL) {
 			printf("Fixed <%s> to <%s>\n", word, currBest);
+			if(is_pronoun(prev))
+			{
+				const char* filename = "verbs_parsed.txt";
+				Verb* verbs;
+				size_t verb_count = load_verbs(filename, &verbs);
+				if (verb_count == 0) {
+					fprintf(stderr, "Failed to load verbs\n");
+					return 1;
+				}
+
+				currBest = correct_verb_form(prev, currBest,verbs,verb_count);
+				if (currBest) {
+					printf("Corrected verb: %s\n", currBest);
+					//free(corrected_verb);
+				}
+
+			}
 			return strdup(currBest);
 		} else {
 			printf("currBest is NULL\n");
@@ -222,11 +239,22 @@ int main(int argc, char *argv[]) {
 	parseWord(map, "./../word_prediction/text.txt");
 	sortWordFrequency(map);
 
+	//Init the verb 
+	/*
+	   const char* filename = "verbs_parsed.txt";
+	   Verb* verbs;
+	   size_t verb_count = load_verbs(filename, &verbs);
+	   if (verb_count == 0) {
+	   fprintf(stderr, "Failed to load verbs\n");
+	   return 1;
+	   }
+	   */
+
 	CallbackData data = {
 		.tree = tree,
 		.treeNames = treeNames,
 		.treePlace = treePlace,
-		.map = map
+		.map = map,
 	};
 
 	GtkWidget *window;

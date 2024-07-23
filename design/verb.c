@@ -99,7 +99,7 @@ char* correct_verb_form(const char *prev, const char *cur, const Verb* verbs, si
 
     return corrected_verb;
 }
-
+/*
 int main() {
     const char* filename = "verbs_parsed.txt";
     Verb* verbs;
@@ -128,4 +128,4 @@ int main() {
     free(verbs);
     
     return 0;
-}
+}*/
