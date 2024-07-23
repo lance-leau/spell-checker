@@ -60,7 +60,7 @@ char* fixWord(char* word, HashMap* map, char* prev) {
 				size_t verb_count = load_verbs(filename, &verbs);
 				if (verb_count == 0) {
 					fprintf(stderr, "Failed to load verbs\n");
-					return 1;
+					//return 1;
 				}
 
 				currBest = correct_verb_form(prev, currBest,verbs,verb_count);
@@ -78,6 +78,7 @@ char* fixWord(char* word, HashMap* map, char* prev) {
 	} else {
 		printf("no entry found for %s\n", word);
 		return strdup(word); // Fallback to original word
+
 	}
 }
 //Parse the last words of the text
@@ -227,7 +228,6 @@ void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev
 		g_free(new_text);
 	}
 }
-
 
 int main(int argc, char *argv[]) {
 	// Initialization of trees + hashmap
