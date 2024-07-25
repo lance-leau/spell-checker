@@ -16,7 +16,10 @@ typedef struct {
 	struct node* tree;
 	struct node* treeNames;
 	struct node* treePlace;
+	struct node* treeNouns;
 	HashMap* map;
+	Verb* verbs;
+	size_t verb_count;
 } CallbackData;
 
 char* to_lower(char* c)
@@ -34,7 +37,8 @@ char* to_lower(char* c)
 }
 
 
-char* fixWord(char* word, HashMap* map, char* prev) {
+char* fixWord(char* word, HashMap* map, char* prev, Verb* verbs, size_t verb_count, struct node* treeNouns)
+{
 	HashMapEntry* entry = findEntry(map, prev);
 	if (entry != NULL) {
 		puts(word);
@@ -52,16 +56,23 @@ char* fixWord(char* word, HashMap* map, char* prev) {
 			}
 		}
 		if (currBest != NULL) {
+
 			printf("Fixed <%s> to <%s>\n", word, currBest);
+			/*if(prev != "_" && isWord(treeNouns, prev))
+			{
+				prev = "it";
+			}*/
+
 			if(is_pronoun(prev))
 			{
-				const char* filename = "verbs_parsed.txt";
-				Verb* verbs;
-				size_t verb_count = load_verbs(filename, &verbs);
+				//const char* filename = "verbs_parsed.txt";
+				//Verb* verbs;
+				//size_t verb_count = load_verbs(filename, &verbs);
 				if (verb_count == 0) {
 					fprintf(stderr, "Failed to load verbs\n");
 					//return 1;
 				}
+
 
 				currBest = correct_verb_form(prev, currBest,verbs,verb_count);
 				if (currBest) {
@@ -156,13 +167,15 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 			} else if (isWord(data->treePlace, cur)) {
 				prev = "it";
 			} else {
-				char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev));
+				char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
 				correct_typos(entry, cur, tmp, prev);
 
 				free(tmp);
 			}
 		} else {
-			char* t = fixWord(to_lower(cur), data->map, to_lower(prev));
+			/*if(isWord(data->treeNouns, cur))
+			  prev = "it";*/
+			char* t = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
 			correct_typos(entry, cur, t, prev);
 
 			free(t);
@@ -234,28 +247,33 @@ int main(int argc, char *argv[]) {
 	struct node* tree = buildTreeFromFile("../Tree/text_100k.txt");
 	struct node* treeNames = buildTreeFromFile("../Tree/names.txt");
 	struct node* treePlace = buildTreeFromFile("../Tree/places2.txt");
+	struct node* treeNouns = buildTreeFromFile("../Tree/text_nouns.txt");
 	// Init Hash map
 	HashMap* map = initHashMap();
 	parseWord(map, "./../word_prediction/text.txt");
 	sortWordFrequency(map);
 
 	//Init the verb 
-	/*
-	   const char* filename = "verbs_parsed.txt";
-	   Verb* verbs;
-	   size_t verb_count = load_verbs(filename, &verbs);
-	   if (verb_count == 0) {
-	   fprintf(stderr, "Failed to load verbs\n");
-	   return 1;
-	   }
-	   */
+
+	const char* filename = "verbs_parsed.txt";
+	Verb* verbs;
+	size_t verb_count = load_verbs(filename, &verbs);
+	if (verb_count == 0) {
+		fprintf(stderr, "Failed to load verbs\n");
+		return 1;
+	}
+
 
 	CallbackData data = {
 		.tree = tree,
 		.treeNames = treeNames,
 		.treePlace = treePlace,
+		.treeNouns = treeNouns,
 		.map = map,
+		.verbs = verbs,
+		.verb_count = verb_count
 	};
+
 
 	GtkWidget *window;
 	GtkWidget *entry;
@@ -291,6 +309,7 @@ int main(int argc, char *argv[]) {
 	destroyTree(tree);
 	destroyTree(treeNames);
 	destroyTree(treePlace);
+	destroyTree(treeNouns);
 	//    destroyHashMap(map);
 
 	return 0;
