@@ -45,22 +45,29 @@ char* fixWord(char* word, HashMap* map, char* prev, Verb* verbs, size_t verb_cou
 	{
 		isWord(treeNouns,prev) ? printf("YES") : printf("NO");
 		prev = "it";
+		entry = findEntry(map, "it");
 	}
 
+	for (int i = 0; i < entry->followerCount; i++) {
+		printf("%s ", entry->followers[i].word);
+	}
+	printf("\n");
 
 	if (entry != NULL) {
 		puts(word);
 		int min = 100;
 		char* currBest = NULL;
-
 		for (int j = 0; j < entry->followerCount; j++) {
-			int soundSame = isEqual(entry->followers[j].word, word);
-			int dist = distance(entry->followers[j].word, word);
-			if (soundSame == 1 && entry->followers[j].word[0] == word[0] && dist < 3) {
-				if (dist < min) {
-					min = dist;
-					currBest = entry->followers[j].word;
+			if (strcmp(entry->followers[j].word, "") != 0) {
+				int soundSame = isEqual(entry->followers[j].word, word);
+				int dist = distance(entry->followers[j].word, word);
+				if (soundSame == 1 && entry->followers[j].word[0] == word[0] && dist < 3) {
+					if (dist < min) {
+						min = dist;
+						currBest = entry->followers[j].word;
+					}
 				}
+				if (isEqual(entry->followers[j].word, word)) printf("%s sounds the same as %s\n", entry->followers[j].word, word);
 			}
 			/*if(strcmp(prev,"_") == 1 && isWord(treeNouns, prev))
 			  {
@@ -283,18 +290,20 @@ void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev
 }
 
 int main(int argc, char *argv[]) {
+	
 	// Initialization of trees + hashmap
 	struct node* tree = buildTreeFromFile("../Tree/text_100k.txt");
 	struct node* treeNames = buildTreeFromFile("../Tree/names.txt");
 	struct node* treePlace = buildTreeFromFile("../Tree/places2.txt");
 	struct node* treeNouns = buildTreeFromFile("../Tree/text_nouns.txt");
+	
 	// Init Hash map
 	HashMap* map = initHashMap();
-	parseWord(map, "./../word_prediction/text.txt");
+	int numThreads = 16;
+	runThreads(numThreads, map, "./../word_prediction/text.txt");
 	sortWordFrequency(map);
 
 	//Init the verb 
-
 	const char* filename = "verbs_parsed.txt";
 	Verb* verbs;
 	size_t verb_count = load_verbs(filename, &verbs);
