@@ -112,8 +112,8 @@ void destroyTree(struct node* root) {
 /*
 int main (int argc, char** argv) {
 
-	struct node* words = buildTreeFromFile("text_100k.txt");
-	int w = isWord(words,"Aby");
+	struct node* words = buildTreeFromFile("text_nouns.txt");
+	int w = isWord(words,"cat");
 
 	w  ? printf("true") : printf("false");
 
