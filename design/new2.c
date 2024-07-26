@@ -11,7 +11,7 @@
 #define WORD_MAX_SIZE 45
 
 void correct_typos(GtkEntry *entry, const char *old, char *new, const char *prev);
-
+static gboolean is_updating = FALSE;
 typedef struct {
 	struct node* tree;
 	struct node* treeNames;
@@ -40,6 +40,14 @@ char* to_lower(char* c)
 char* fixWord(char* word, HashMap* map, char* prev, Verb* verbs, size_t verb_count, struct node* treeNouns)
 {
 	HashMapEntry* entry = findEntry(map, prev);
+	printf("THE PREV WORD IS %s \n", prev);
+	if(strcmp(prev,"_") != 0 && isWord(treeNouns,prev))
+	{
+		isWord(treeNouns,prev) ? printf("YES") : printf("NO");
+		prev = "it";
+	}
+
+
 	if (entry != NULL) {
 		puts(word);
 		int min = 100;
@@ -54,26 +62,25 @@ char* fixWord(char* word, HashMap* map, char* prev, Verb* verbs, size_t verb_cou
 					currBest = entry->followers[j].word;
 				}
 			}
+			/*if(strcmp(prev,"_") == 1 && isWord(treeNouns, prev))
+			  {
+			  isWord(treeNouns,prev) ? printf("YES") : printf("NO");
+			  prev = "it";
+			  }*/
+
 		}
 		if (currBest != NULL) {
 
 			printf("Fixed <%s> to <%s>\n", word, currBest);
-			/*if(prev != "_" && isWord(treeNouns, prev))
-			{
-				prev = "it";
-			}*/
+			//isWord(treeNouns,prev) ? printf("YES\n") : printf("NO\n");
+			/*if(strcmp(prev,"_") == 1 && isWord(treeNouns, prev))
+			  {
+			  isWord(treeNouns,prev) ? printf("YES") : printf("NO");
+			  prev = "it";
+			  }*/
 
 			if(is_pronoun(prev))
-			{
-				//const char* filename = "verbs_parsed.txt";
-				//Verb* verbs;
-				//size_t verb_count = load_verbs(filename, &verbs);
-				if (verb_count == 0) {
-					fprintf(stderr, "Failed to load verbs\n");
-					//return 1;
-				}
-
-
+			{	
 				currBest = correct_verb_form(prev, currBest,verbs,verb_count);
 				if (currBest) {
 					printf("Corrected verb: %s\n", currBest);
@@ -83,10 +90,22 @@ char* fixWord(char* word, HashMap* map, char* prev, Verb* verbs, size_t verb_cou
 			}
 			return strdup(currBest);
 		} else {
+
+			word = correct_verb_form(prev, word,verbs,verb_count);
+			if (word) {
+				printf("Corrected verb: %s\n", word);
+				//free(corrected_verb);
+			}
 			printf("currBest is NULL\n");
 			return strdup(word); // Fallback to original word
 		}
 	} else {
+		word = correct_verb_form(prev, word,verbs,verb_count);
+		if (word) {
+			printf("Corrected verb: %s\n", word);
+			//free(corrected_verb);
+		}
+
 		printf("no entry found for %s\n", word);
 		return strdup(word); // Fallback to original word
 
@@ -139,6 +158,10 @@ char** parser(const gchar* text) {
 
 
 static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
+
+	if(is_updating)
+		return;
+
 	const gchar *text = gtk_entry_get_text(entry);
 	char *current_text = g_strdup(text); // Duplicate the current text for manipulation
 
@@ -167,16 +190,20 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 			} else if (isWord(data->treePlace, cur)) {
 				prev = "it";
 			} else {
+				is_updating = TRUE;
 				char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
 				correct_typos(entry, cur, tmp, prev);
+				is_updating = FALSE;
 
 				free(tmp);
 			}
 		} else {
 			/*if(isWord(data->treeNouns, cur))
 			  prev = "it";*/
+			is_updating = TRUE;
 			char* t = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
 			correct_typos(entry, cur, t, prev);
+			is_updating = FALSE;
 
 			free(t);
 			prev = cur;
@@ -232,12 +259,21 @@ void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev
 
 		// Append text after the old word
 		strcat(new_text, pos + old_len + (punctuation ? 1 : 0));
-
+		/*
 		// Block signal handler to prevent recursion
 		g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
 		gtk_entry_set_text(entry, new_text);
 		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
+		*/
+		// Save the cursor position before modifying the text
+		gint cursor_position = gtk_editable_get_position(GTK_EDITABLE(entry));
+		gint new_cursor_position = cursor_position + (new_len - old_len);
 
+		// Block signal handler to prevent recursion
+		g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
+		gtk_entry_set_text(entry, new_text);
+		gtk_editable_set_position(GTK_EDITABLE(entry), new_cursor_position);
+		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
 		g_free(new_text);
 	}
 }
