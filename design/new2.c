@@ -162,6 +162,9 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 	if(is_updating)
 		return;
 
+
+	is_updating = TRUE;
+
 	const gchar *text = gtk_entry_get_text(entry);
 	char *current_text = g_strdup(text); // Duplicate the current text for manipulation
 
@@ -169,6 +172,7 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 
 	size_t n = strlen(text);
 	if (n == 0) {
+		is_updating = FALSE;
 		g_free(current_text);
 		return; // No text, just return
 	}
@@ -213,7 +217,7 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 		free(r[1]);
 		free(r);
 	}
-
+	is_updating = FALSE;
 	g_free(current_text);
 }
 
@@ -266,13 +270,13 @@ void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev
 		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
 		*/
 		// Save the cursor position before modifying the text
-		gint cursor_position = gtk_editable_get_position(GTK_EDITABLE(entry));
-		gint new_cursor_position = cursor_position + (new_len - old_len);
+		//gint cursor_position = gtk_editable_get_position(GTK_EDITABLE(entry));
+		//gint new_cursor_position = cursor_position + (new_len - old_len);
 
 		// Block signal handler to prevent recursion
 		g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
 		gtk_entry_set_text(entry, new_text);
-		gtk_editable_set_position(GTK_EDITABLE(entry), new_cursor_position);
+		//gtk_editable_set_position(GTK_EDITABLE(entry), new_cursor_position);
 		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
 		g_free(new_text);
 	}
