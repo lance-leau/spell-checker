@@ -13,17 +13,14 @@ SRCS = tree.c
 # Object files
 OBJS = $(SRCS:.c=.o)
 
-# Paths to json-c library and include directory
-JSONC_LIBS = -ljson-c
-JSONC_INCLUDE = /usr/include/json-c   # Adjust this path if necessary
 
 # Build target
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(JSONC_LIBS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) 
 
 # Compile source files
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@ -I$(JSONC_INCLUDE)
+	$(CC) $(CFLAGS) -c $< -o $@ 
 
 # Clean target
 clean: 
