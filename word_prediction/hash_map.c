@@ -114,7 +114,7 @@ void addWordToHashMap(HashMap* map, char* key, char* follower) {
 void prettyPrintHashMap(HashMap *map) {
 	for (int i = 0; i < map->capacity; i++) {
 		if (map->entries[i].key[0] != '\0') {
-			printf("%s:", map->entries[i].key);
+			printf("%s (%i) :", map->entries[i].key, map->entries[i].followerCount);
 			for (int j = 0; j < map->entries[i].followerCount; j++) {
 				printf(" %s (%d)", map->entries[i].followers[j].word, map->entries[i].followers[j].count);
 			}
@@ -252,6 +252,7 @@ void runThreads(int numThreads, HashMap* map, char* filename) {
 	}
 }
 
+/*
 int main() {
 	// clock_t begin = clock();
 
@@ -269,3 +270,4 @@ int main() {
 
 	return 0;
 }
+*/
