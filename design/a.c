@@ -27,6 +27,12 @@ char* to_lower(char* c)
 	size_t n = strlen(c);
 	char* r = malloc(sizeof(char) * (n+1));
 
+	if(r == NULL)
+	{
+		fprintf(stderr,"Memory allocation failed");
+		exit(1);
+	}
+
 	for(size_t i = 0; i < n; i++)
 	{
 		r[i] = tolower(c[i]);
