@@ -219,6 +219,7 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 				puts(tmp);
 				correct_typos(entry, tmp, prev, r);
 				is_updating = FALSE;
+printf("HERE 1.1 \n");
 
 				free(tmp);
 			}
@@ -230,14 +231,18 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 			puts(t);
 			correct_typos(entry, t, prev, r);
 			is_updating = FALSE;
-
+			printf("HERE 1.0 \n");
 			free(t);
 			prev = cur;
 		}
+		printf("HERE 2.0 \n");
+		
+		//TODO handle the free
 
-		free(r[0]);
-		free(r[1]);
-		free(r);
+		printf("iiiiii \n");
+		//free(r[0]);
+		//free(r[1]);
+		//free(r);
 	}
 	is_updating = FALSE;
 	g_free(current_text);
@@ -253,7 +258,7 @@ void reverse_char_array(char** array) {
 }
 
 void correct_typos(GtkEntry *entry, char *new, const char* prev, char** array) {
-    	printf("fghjklm");
+    	printf("fghjklm \n");
 	size_t size = get_size(array);
 	
 	printf("HERE");
@@ -264,7 +269,7 @@ void correct_typos(GtkEntry *entry, char *new, const char* prev, char** array) {
 
         reverse_char_array(array);
 
-	printf("HERE 2");
+	printf("HERE 2 \n" );
 
         // Construct the new text from the array
         GString *new_text = g_string_new("");
@@ -275,8 +280,11 @@ void correct_typos(GtkEntry *entry, char *new, const char* prev, char** array) {
             }
         }
 
+	printf("HERE 3 \n");
+
         // Set the new text in the GTK entry
         gtk_entry_set_text(entry, new_text->str);
+printf("HERE 4 \n");
 
         g_string_free(new_text, TRUE);
 
@@ -285,6 +293,8 @@ void correct_typos(GtkEntry *entry, char *new, const char* prev, char** array) {
             free(array[i]);
         }
         free(array);
+
+	printf("ici \n");
     }
 }
 
