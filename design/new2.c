@@ -10,7 +10,7 @@
 #include "verb.h"
 #define WORD_MAX_SIZE 45
 
-void correct_typos(GtkEntry *entry, const char *old, char *new, const char *prev);
+void correct_typos(GtkEntry* entry, char* new, char** words, int word_count);
 static gboolean is_updating = FALSE;
 typedef struct {
 	struct node* tree;
@@ -112,51 +112,66 @@ char* fixWord(char* word, HashMap* map, char* prev, Verb* verbs, size_t verb_cou
 
 	}
 }
-//Parse the last words of the text
-char** parser(const gchar* text) {
-	size_t n = strlen(text);
-	char** r = malloc(sizeof(char*) * 2); // Allocate space for 2 words
-	size_t indW = 0;
-	size_t indR = 0;
-	char* w = malloc(sizeof(char) * WORD_MAX_SIZE);
-	int i = n - 1;
 
-	while (i >= 0 && indR < 2) {
-		if (text[i] == ' ' || i == 0) {
-			if (indW > 0 || i == 0) {
-				if (i == 0 && text[i] != ' ') 
-					w[indW++] = text[i]; 
-
-				w[indW] = '\0';
-				// Reverse the word
-				for (size_t j = 0; j < indW / 2; j++) {
-					char temp = w[j];
-					w[j] = w[indW - j - 1];
-					w[indW - j - 1] = temp;
-				}
-				r[indR] = malloc(sizeof(char) * (indW + 1));
-				strcpy(r[indR], w);
-				indR++;
-				indW = 0;
-			}
-		} else {
-			w[indW] = text[i];
-			indW++;
-		}
-		i--;
+int is_punctuation(char c) {
+	char ponct[] = {'.', ',', '!', ':', ';', '?'};
+	for (int i = 0; ponct[i] != '\0'; i ++) {
+		if (c == ponct[i]) return 1;
 	}
-
-	if (indR == 2 && r[1][strlen(r[1]) - 1] == '.') {
-		free(r[1]);
-		r[1] = malloc(sizeof(char) * 2);
-		strcpy(r[1], "_");
-	}
-
-	free(w);
-	return r;
+    return 0;
 }
 
+// Function to parse the input string into words
+char** parser(const gchar* text, int* word_count) {
+    int size = 10; // Initial capacity for the result array
+    char** result = malloc(size * sizeof(char*)); // Allocate initial memory
+    *word_count = 0; // Initialize word count
 
+    const char* start = text;
+    while (*text) {
+        if (isspace(*text) || is_punctuation(*text)) {
+            if (start != text) {
+                int length = text - start;
+                result[*word_count] = malloc((length + 1) * sizeof(char));
+                strncpy(result[*word_count], start, length);
+                result[*word_count][length] = '\0';
+                (*word_count)++;
+            }
+            if (is_punctuation(*text)) {
+                result[*word_count] = malloc(2 * sizeof(char));
+                result[*word_count][0] = *text;
+                result[*word_count][1] = '\0';
+                (*word_count)++;
+            }
+            if (*word_count >= size) {
+                size *= 2;
+                result = realloc(result, size * sizeof(char*));
+            }
+            start = text + 1;
+        }
+        text++;
+    }
+
+    if (start != text) {
+        int length = text - start;
+        result[*word_count] = malloc((length + 1) * sizeof(char));
+        strncpy(result[*word_count], start, length);
+        result[*word_count][length] = '\0';
+        (*word_count)++;
+    }
+
+    result[*word_count] = NULL; // Null-terminate the array of words
+
+    return result;
+}
+
+// Function to free the allocated memory
+void free_parsed_words(char** words) {
+    for (int i = 0; words[i] != NULL; i++) {
+        free(words[i]);
+    }
+    free(words);
+}
 
 static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 
@@ -169,7 +184,7 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 	const gchar *text = gtk_entry_get_text(entry);
 	char *current_text = g_strdup(text); // Duplicate the current text for manipulation
 
-	CallbackData *data = (CallbackData *)user_data;
+	CallbackData *data = (CallbackData*)user_data;
 
 	size_t n = strlen(text);
 	if (n == 0) {
@@ -182,11 +197,21 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 	int isPonct = text[n - 1] == '.' || text[n - 1] == ',' || text[n - 1] == ':' ? 1 : 0;
 
 	if (isSpace) {
-		char** r = parser(text);
-		char* cur = r[0];
-		char* prev = (r[1] != NULL) ? r[1] : "_";
-		//cur = to_lower(cur);
-		//prev = to_lower(prev);
+		int word_count;
+    	char** words = parser(text, &word_count);
+
+    	printf("Word count: %d\n", word_count);
+    	for (int i = 0; words[i] != NULL; i++) {
+        	printf("[%s]\n", words[i]);
+    	}	
+
+		char* cur = words[word_count-1];
+		char* prev;
+		if (word_count < 2) {
+			prev = "_";
+		} else {
+			prev = words[word_count-2];
+		}
 
 		if (!isWord(data->tree, cur)) {
 			if (isWord(data->treeNames, cur)) {
@@ -194,158 +219,51 @@ static void on_entry_changed(GtkEntry *entry, gpointer user_data) {
 				prev = "he";
 			} else if (isWord(data->treePlace, cur)) {
 				prev = "it";
-			} else {
-				is_updating = TRUE;
-				char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
-				correct_typos(entry, cur, tmp, prev);
-				is_updating = FALSE;
-
-				free(tmp);
 			}
-		} else {
-			/*if(isWord(data->treeNouns, cur))
-			  prev = "it";*/
 			is_updating = TRUE;
 			char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
-			correct_typos(entry, cur, tmp, prev);
+			correct_typos(entry, tmp, words, word_count);
+			is_updating = FALSE;
+
+			free(tmp);
+		} else {
+			is_updating = TRUE;
+			char* tmp = fixWord(to_lower(cur), data->map, to_lower(prev), data->verbs, data->verb_count, data->treeNouns);
+			correct_typos(entry, tmp, words, word_count);
 			is_updating = FALSE;
 
 			free(tmp);
 			prev = cur;
 		}
 
-		free(r[0]);
-		free(r[1]);
-		free(r);
+		free_parsed_words(words);
 	}
 	is_updating = FALSE;
 	g_free(current_text);
 }
 
-void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev) {
-    const gchar *text = gtk_entry_get_text(entry);
-    char *pos = strstr(text, old);
-
-    if (pos != NULL) {
-        printf("PREV IS: %s\n", prev);
-        if(strcmp(prev, "_") == 0) {
-            new[0] = toupper(new[0]);
-            printf("TOUPPER: %s\n", new);
-        }
-
-        // Identify any trailing punctuation
-        size_t old_len = strlen(old);
-        size_t new_len = strlen(new);
-        char punctuation = '\0';
-
-        if (!isalnum(pos[old_len - 1])) {
-            punctuation = pos[old_len - 1];
-            old_len--; // Adjust old_len to exclude punctuation
-        }
-
-        // Save the current cursor position
-        gint cursor_position = gtk_editable_get_position(GTK_EDITABLE(entry));
-        gint offset = pos - text; // Offset where the old word starts
-
-        // Ensure enough space for new text
-        gchar *new_text = g_malloc(strlen(text) - old_len + new_len + (punctuation ? 1 : 0) + 1);
-
-        // Copy text before the old word
-        strncpy(new_text, text, pos - text);
-        new_text[pos - text] = '\0';
-
-        // Append new word
-        strcat(new_text, new);
-
-        // Append punctuation if it was present
-        if (punctuation) {
-            strncat(new_text, &punctuation, 1);
-        }
-
-        // Append text after the old word
-        strcat(new_text, pos + old_len + (punctuation ? 1 : 0));
-
-        // Block signal handler to prevent recursion
-        g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
-        gtk_entry_set_text(entry, new_text);
-
-        // Calculate the new cursor position
-        gint new_cursor_position = offset + new_len;
-        gtk_editable_set_position(GTK_EDITABLE(entry), strlen(new_text));
-
-        g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
-
-        g_free(new_text);
+void correct_typos(GtkEntry *entry, char *new_word, char** words, int word_count) {
+    int total_length = 0;
+    for (int i = 0; i < word_count - 1; i++) {
+        total_length += strlen(words[i]) + 1; // Add 1 for the space or punctuation
     }
+    total_length += strlen(new_word);
+
+    char* new_text = malloc((total_length + 1) * sizeof(char));
+    new_text[0] = '\0'; // Initialize the string
+
+    for (int i = 0; i < word_count - 1; i++) {
+        strcat(new_text, words[i]);
+        strcat(new_text, " ");
+    }
+
+    strcat(new_text, new_word);
+	strcat(new_text, " ");
+
+    gtk_entry_set_text(entry, new_text);
+
+    free(new_text);
 }
-/*
-void correct_typos(GtkEntry *entry, const char *old, char *new, const char* prev) {
-	const gchar *text = gtk_entry_get_text(entry);
-	char *pos = strstr(text, old);
-
-	if (pos != NULL) {
-
-		printf("PREV IS: %s\n", prev);
-		if(strcmp(prev, "_") == 0)
-		{
-			new[0] = toupper(new[0]);
-			printf("TOUPPER: %s\n",new);
-		}
-		// Identify any trailing punctuation
-		size_t old_len = strlen(old);
-		size_t new_len = strlen(new);
-		size_t tail_len = strlen(pos + old_len);
-		char punctuation = '\0';
-
-		if (!isalnum(pos[old_len - 1])) {//isalnum checks if it is a letter or number
-			punctuation = pos[old_len - 1];
-			old_len--; // Adjust old_len to exclude punctuation
-		}
-
-		// Ensure enough space for new text
-		char *new_text = g_malloc(strlen(text) - old_len + new_len + (old_len<new_len ? 1 : 0) + (punctuation ? 1 : 0) + 1);
-
-		// Copy text before the old word
-		strncpy(new_text, text, pos - text);
-		new_text[pos - text] = '\0';
-
-		// Append new word
-		strcat(new_text, new);
-
-		// Append punctuation if it was present
-		if (punctuation) {
-			strncat(new_text, &punctuation, 1);
-		}
-
-		// Append text after the old word
-		strcat(new_text, pos + new_len + (punctuation ? 1 : 0));
-
-		if (new_len > old_len) {
-            strcat(new_text, " ");
-        }
-		
-		
-		// Block signal handler to prevent recursion
-		g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
-		gtk_entry_set_text(entry, new_text);
-		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
-		
-		// Save the cursor position before modifying the text
-		//gint cursor_position = gtk_editable_get_position(GTK_EDITABLE(entry));
-		//gint new_cursor_position = cursor_position + (new_len - old_len);
-
-		// Block signal handler to prevent recursion
-		g_signal_handlers_block_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
-		gtk_entry_set_text(entry, new_text);
-
-		gtk_editable_set_position(GTK_EDITABLE(entry), -1);
-
-		//gtk_editable_set_position(GTK_EDITABLE(entry), new_cursor_position);
-		g_signal_handlers_unblock_by_func(entry, G_CALLBACK(on_entry_changed), NULL);
-		g_free(new_text);
-	}
-}
-*/
 
 int main(int argc, char *argv[]) {
 	
